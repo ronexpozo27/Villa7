@@ -1,0 +1,14 @@
+<Solution>
+  <Folder Name="/API/">
+    <Project Path="API/Villa7.API.csproj" />
+  </Folder>
+  <Folder Name="/Application/">
+    <Project Path="Application/Villa7.Application.csproj" />
+  </Folder>
+  <Folder Name="/Domain/">
+    <Project Path="Domain/Villa7.Domain.csproj" />
+  </Folder>
+  <Folder Name="/Infrastructure/">
+    <Project Path="Infrastructure/Villa7.Infrastructure.csproj" />
+  </Folder>
+</Solution>

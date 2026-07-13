@@ -1,0 +1,8 @@
+namespace Villa7.Application.DTOs.Auth;
+
+public class RegisterDto
+{
+    public string Nombre { get; set; } = string.Empty;
+    public string Correo { get; set; } = string.Empty;
+    public string Password { get; set; } = string.Empty;
+}
