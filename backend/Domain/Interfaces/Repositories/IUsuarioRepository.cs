@@ -11,4 +11,6 @@ public interface IUsuarioRepository
     Task UpdateAsync(Usuario usuario);
     Task<bool> CorreoExistsAsync(string correo);
     Task<List<Usuario>> ListClientesAsync();
+    Task DeleteAsync(Usuario usuario);
+    Task<bool> HasAnyBookingsAsync(Guid usuarioId);
 }

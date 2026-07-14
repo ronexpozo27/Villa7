@@ -12,5 +12,6 @@ public interface IServicioRepository
     Task UpdateAsync(Servicio servicio);
     Task<bool> NombreExistsAsync(string nombre, Guid? excludeId = null);
     Task<bool> HasBookingsAsync(Guid servicioId);
+    Task DeleteAsync(Servicio servicio);
 }
 

@@ -15,6 +15,7 @@ using Villa7.Application.DTOs.Habitacion;
 using Villa7.Application.DTOs.Reserva;
 using Villa7.Application.DTOs.Servicio;
 using Villa7.Infrastructure.Persistence;
+using Microsoft.EntityFrameworkCore;
 using Xunit;
 
 namespace Villa7.IntegrationTests;
@@ -371,6 +372,156 @@ public class IntegrationTests : IClassFixture<WebApplicationFactory<Program>>, I
         cancelReq.Headers.Authorization = new AuthenticationHeaderValue("Bearer", clientToken);
         var cancelRes = await _client.SendAsync(cancelReq);
         cancelRes.StatusCode.Should().Be(HttpStatusCode.NoContent);
+    }
+
+    // ==========================================
+    // 5. ELIMINACIÓN ADMINISTRATIVA (DELETE)
+    // ==========================================
+    [Fact]
+    public async Task Admin_Should_DeleteInactiveEntitiesWithoutBookings_And_FailOnActiveOrBooked()
+    {
+        var adminToken = await LoginAsAdminAsync();
+
+        // --- 5.1 HABITACIONES ---
+        // Crear habitación
+        var roomDto = new CrearHabitacionDto
+        {
+            Nombre = $"Room Delete Test {Guid.NewGuid()}",
+            Descripcion = "Temp",
+            CapacidadMax = 2,
+            PrecioPorNoche = 100m,
+            Ubicacion = "Cerca"
+        };
+        var createRoomReq = new HttpRequestMessage(HttpMethod.Post, "/api/v1/habitaciones")
+        {
+            Content = JsonContent.Create(roomDto)
+        };
+        createRoomReq.Headers.Authorization = new AuthenticationHeaderValue("Bearer", adminToken);
+        var createRoomRes = await _client.SendAsync(createRoomReq);
+        createRoomRes.StatusCode.Should().Be(HttpStatusCode.Created);
+        var createdRoom = await createRoomRes.Content.ReadFromJsonAsync<HabitacionDto>();
+        _roomsToClean.Add(createdRoom!.Id);
+
+        // Intentar eliminar activa (debe fallar 409)
+        var deleteRoomReq1 = new HttpRequestMessage(HttpMethod.Delete, $"/api/v1/habitaciones/{createdRoom.Id}");
+        deleteRoomReq1.Headers.Authorization = new AuthenticationHeaderValue("Bearer", adminToken);
+        var deleteRoomRes1 = await _client.SendAsync(deleteRoomReq1);
+        deleteRoomRes1.StatusCode.Should().Be(HttpStatusCode.Conflict);
+
+        // Desactivar
+        var deactivateRoomReq = new HttpRequestMessage(HttpMethod.Patch, $"/api/v1/habitaciones/{createdRoom.Id}/estado")
+        {
+            Content = JsonContent.Create(new { Activo = false, Motivo = "Para borrar" })
+        };
+        deactivateRoomReq.Headers.Authorization = new AuthenticationHeaderValue("Bearer", adminToken);
+        var deactivateRoomRes = await _client.SendAsync(deactivateRoomReq);
+        deactivateRoomRes.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        // Eliminar inactiva sin reservas (debe tener éxito 200)
+        var deleteRoomReq2 = new HttpRequestMessage(HttpMethod.Delete, $"/api/v1/habitaciones/{createdRoom.Id}?motivo=AdminDelete");
+        deleteRoomReq2.Headers.Authorization = new AuthenticationHeaderValue("Bearer", adminToken);
+        var deleteRoomRes2 = await _client.SendAsync(deleteRoomReq2);
+        deleteRoomRes2.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        // Verificar que ya no exista
+        var getRoomReq = new HttpRequestMessage(HttpMethod.Get, $"/api/v1/habitaciones/{createdRoom.Id}");
+        var getRoomRes = await _client.SendAsync(getRoomReq);
+        getRoomRes.StatusCode.Should().Be(HttpStatusCode.NotFound);
+
+        // Verificar auditoría en BD
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var audit = await context.AuditoriaEliminaciones.FirstOrDefaultAsync(a => a.EntidadId == createdRoom.Id);
+            audit.Should().NotBeNull();
+            audit!.Entidad.Should().Be("Habitacion");
+            audit.Administrador.Should().Be("admin@villa7.com");
+            audit.Motivo.Should().Be("AdminDelete");
+        }
+
+        // --- 5.2 SERVICIOS ---
+        // Crear servicio
+        var srvDto = new CrearServicioDto
+        {
+            Nombre = $"Srv Delete Test {Guid.NewGuid()}",
+            Descripcion = "Temp",
+            Precio = 20m
+        };
+        var createSrvReq = new HttpRequestMessage(HttpMethod.Post, "/api/v1/servicios")
+        {
+            Content = JsonContent.Create(srvDto)
+        };
+        createSrvReq.Headers.Authorization = new AuthenticationHeaderValue("Bearer", adminToken);
+        var createSrvRes = await _client.SendAsync(createSrvReq);
+        createSrvRes.StatusCode.Should().Be(HttpStatusCode.Created);
+        var createdSrv = await createSrvRes.Content.ReadFromJsonAsync<ServicioDto>();
+        _servicesToClean.Add(createdSrv!.Id);
+
+        // Intentar eliminar activo (debe fallar 409)
+        var deleteSrvReq1 = new HttpRequestMessage(HttpMethod.Delete, $"/api/v1/servicios/{createdSrv.Id}");
+        deleteSrvReq1.Headers.Authorization = new AuthenticationHeaderValue("Bearer", adminToken);
+        var deleteSrvRes1 = await _client.SendAsync(deleteSrvReq1);
+        deleteSrvRes1.StatusCode.Should().Be(HttpStatusCode.Conflict);
+
+        // Desactivar
+        var deactivateSrvReq = new HttpRequestMessage(HttpMethod.Patch, $"/api/v1/servicios/{createdSrv.Id}/estado")
+        {
+            Content = JsonContent.Create(new { Activo = false, Motivo = "Para borrar" })
+        };
+        deactivateSrvReq.Headers.Authorization = new AuthenticationHeaderValue("Bearer", adminToken);
+        var deactivateSrvRes = await _client.SendAsync(deactivateSrvReq);
+        deactivateSrvRes.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        // Eliminar inactivo sin reservas (debe tener éxito 200)
+        var deleteSrvReq2 = new HttpRequestMessage(HttpMethod.Delete, $"/api/v1/servicios/{createdSrv.Id}?motivo=AdminDeleteSrv");
+        deleteSrvReq2.Headers.Authorization = new AuthenticationHeaderValue("Bearer", adminToken);
+        var deleteSrvRes2 = await _client.SendAsync(deleteSrvReq2);
+        deleteSrvRes2.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        // Verificar que ya no exista en la BD
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var srv = await context.Servicios.FindAsync(createdSrv.Id);
+            srv.Should().BeNull();
+
+            var audit = await context.AuditoriaEliminaciones.FirstOrDefaultAsync(a => a.EntidadId == createdSrv.Id);
+            audit.Should().NotBeNull();
+            audit!.Entidad.Should().Be("Servicio");
+            audit.Motivo.Should().Be("AdminDeleteSrv");
+        }
+
+        // --- 5.3 CLIENTES ---
+        // Registrar cliente
+        var clientEmail = $"temp-delete-{Guid.NewGuid()}@test.com";
+        var (_, clientId) = await RegisterAndLoginClientAsync(clientEmail);
+
+        // Por defecto se registra como activo. Intentar eliminar activo (debe fallar 409)
+        var deleteCliReq1 = new HttpRequestMessage(HttpMethod.Delete, $"/api/v1/clientes/{clientId}");
+        deleteCliReq1.Headers.Authorization = new AuthenticationHeaderValue("Bearer", adminToken);
+        var deleteCliRes1 = await _client.SendAsync(deleteCliReq1);
+        deleteCliRes1.StatusCode.Should().Be(HttpStatusCode.Conflict);
+
+        // Desactivar cliente
+        var deactivateCliReq = new HttpRequestMessage(HttpMethod.Patch, $"/api/v1/clientes/{clientId}/estado")
+        {
+            Content = JsonContent.Create(new { Activo = false, Motivo = "Desactivación para borrado" })
+        };
+        deactivateCliReq.Headers.Authorization = new AuthenticationHeaderValue("Bearer", adminToken);
+        var deactivateCliRes = await _client.SendAsync(deactivateCliReq);
+        deactivateCliRes.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        // Eliminar cliente inactivo (debe tener éxito 200)
+        var deleteCliReq2 = new HttpRequestMessage(HttpMethod.Delete, $"/api/v1/clientes/{clientId}?motivo=AdminDeleteCli");
+        deleteCliReq2.Headers.Authorization = new AuthenticationHeaderValue("Bearer", adminToken);
+        var deleteCliRes2 = await _client.SendAsync(deleteCliReq2);
+        deleteCliRes2.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        // Verificar que ya no exista
+        var getCliReq = new HttpRequestMessage(HttpMethod.Get, $"/api/v1/clientes/{clientId}");
+        getCliReq.Headers.Authorization = new AuthenticationHeaderValue("Bearer", adminToken);
+        var getCliRes = await _client.SendAsync(getCliReq);
+        getCliRes.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
     // ==========================================

@@ -27,4 +27,10 @@ export const serviciosApi = {
     return response.data;
   },
 
+  delete: async (id: string, motivo?: string): Promise<{ message: string }> => {
+    const response = await axiosClient.delete<{ message: string }>(`/servicios/${id}`, {
+      params: motivo ? { motivo } : undefined,
+    });
+    return response.data;
+  },
 };

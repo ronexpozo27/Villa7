@@ -14,6 +14,7 @@ public class AppDbContext : DbContext
     public DbSet<Servicio> Servicios { get; set; } = null!;
     public DbSet<Reserva> Reservas { get; set; } = null!;
     public DbSet<ReservaServicio> ReservaServicios { get; set; } = null!;
+    public DbSet<AuditoriaEliminacion> AuditoriaEliminaciones { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -147,6 +148,21 @@ public class AppDbContext : DbContext
                 .WithMany()
                 .HasForeignKey(d => d.ServicioId)
                 .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // 6. Mapeo de la entidad AuditoriaEliminacion
+        modelBuilder.Entity<AuditoriaEliminacion>(entity =>
+        {
+            entity.ToTable("auditoria_eliminaciones");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.Fecha).HasColumnName("fecha").HasDefaultValueSql("NOW()").IsRequired();
+            entity.Property(e => e.Administrador).HasColumnName("administrador").HasMaxLength(255).IsRequired();
+            entity.Property(e => e.Entidad).HasColumnName("entidad").HasMaxLength(50).IsRequired();
+            entity.Property(e => e.EntidadId).HasColumnName("entidad_id").IsRequired();
+            entity.Property(e => e.Nombre).HasColumnName("nombre").HasMaxLength(255).IsRequired();
+            entity.Property(e => e.Ip).HasColumnName("ip").HasMaxLength(45);
+            entity.Property(e => e.Motivo).HasColumnName("motivo").HasMaxLength(1000);
         });
     }
 }

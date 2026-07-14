@@ -9,17 +9,24 @@ using Villa7.Domain.Entities;
 using Villa7.Domain.Interfaces.Repositories;
 using Xunit;
 
+using Villa7.Application.Interfaces;
+using Villa7.Domain.Exceptions;
+
 namespace Villa7.UnitTests.Habitaciones;
 
 public class HabitacionServiceTests
 {
     private readonly Mock<IHabitacionRepository> _habitacionRepoMock;
+    private readonly Mock<IStorageService> _storageServiceMock;
+    private readonly Mock<IAuditoriaRepository> _auditoriaRepoMock;
     private readonly HabitacionService _habitacionService;
 
     public HabitacionServiceTests()
     {
         _habitacionRepoMock = new Mock<IHabitacionRepository>();
-        _habitacionService = new HabitacionService(_habitacionRepoMock.Object);
+        _storageServiceMock = new Mock<IStorageService>();
+        _auditoriaRepoMock = new Mock<IAuditoriaRepository>();
+        _habitacionService = new HabitacionService(_habitacionRepoMock.Object, _storageServiceMock.Object, _auditoriaRepoMock.Object);
     }
 
     [Fact]
@@ -212,5 +219,99 @@ public class HabitacionServiceTests
         // Assert
         await act.Should().ThrowAsync<ArgumentException>()
             .WithMessage("La fecha de salida debe ser posterior a la fecha de entrada.");
+    }
+
+    [Fact]
+    public async Task DeleteAsync_InactiveNoBookingsAndImage_ShouldDeleteFromStorageAndDbAndAudit()
+    {
+        // Arrange
+        var id = Guid.NewGuid();
+        var habitacion = new Habitacion
+        {
+            Id = id,
+            Nombre = "Cabaña A1",
+            Activa = false,
+            ImagenStoragePath = "habitaciones/imagen123.jpg"
+        };
+        _habitacionRepoMock.Setup(r => r.GetByIdAsync(id)).ReturnsAsync(habitacion);
+        _habitacionRepoMock.Setup(r => r.HasAnyBookingsAsync(id)).ReturnsAsync(false);
+        _storageServiceMock.Setup(s => s.DeleteFileAsync("habitaciones", "imagen123.jpg")).Returns(Task.CompletedTask);
+
+        // Act
+        await _habitacionService.DeleteAsync(id, "admin@test.com", "192.168.1.10", "Borrando cabaña");
+
+        // Assert
+        _storageServiceMock.Verify(s => s.DeleteFileAsync("habitaciones", "imagen123.jpg"), Times.Once);
+        _habitacionRepoMock.Verify(r => r.DeleteAsync(habitacion), Times.Once);
+        _auditoriaRepoMock.Verify(a => a.RegistrarEliminacionAsync(It.Is<AuditoriaEliminacion>(x =>
+            x.Entidad == "Habitacion" &&
+            x.EntidadId == id &&
+            x.Nombre == "Cabaña A1" &&
+            x.Administrador == "admin@test.com" &&
+            x.Ip == "192.168.1.10" &&
+            x.Motivo == "Borrando cabaña"
+        )), Times.Once);
+    }
+
+    [Fact]
+    public async Task DeleteAsync_WhenActive_ShouldThrowBusinessRuleException()
+    {
+        // Arrange
+        var id = Guid.NewGuid();
+        var habitacion = new Habitacion { Id = id, Nombre = "Cabaña A1", Activa = true };
+        _habitacionRepoMock.Setup(r => r.GetByIdAsync(id)).ReturnsAsync(habitacion);
+
+        // Act
+        Func<Task> act = async () => await _habitacionService.DeleteAsync(id, "admin@test.com", null, null);
+
+        // Assert
+        await act.Should().ThrowAsync<BusinessRuleException>()
+            .WithMessage("No se puede eliminar una habitación activa. Debe desactivarse primero.");
+        _habitacionRepoMock.Verify(r => r.DeleteAsync(It.IsAny<Habitacion>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task DeleteAsync_WhenHasBookings_ShouldThrowBusinessRuleException()
+    {
+        // Arrange
+        var id = Guid.NewGuid();
+        var habitacion = new Habitacion { Id = id, Nombre = "Cabaña A1", Activa = false };
+        _habitacionRepoMock.Setup(r => r.GetByIdAsync(id)).ReturnsAsync(habitacion);
+        _habitacionRepoMock.Setup(r => r.HasAnyBookingsAsync(id)).ReturnsAsync(true);
+
+        // Act
+        Func<Task> act = async () => await _habitacionService.DeleteAsync(id, "admin@test.com", null, null);
+
+        // Assert
+        await act.Should().ThrowAsync<BusinessRuleException>()
+            .WithMessage("No es posible eliminar una habitación que posee reservas asociadas.");
+        _habitacionRepoMock.Verify(r => r.DeleteAsync(It.IsAny<Habitacion>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task DeleteAsync_WhenStorageDeleteFails_ShouldThrowAndCancelDbOperation()
+    {
+        // Arrange
+        var id = Guid.NewGuid();
+        var habitacion = new Habitacion
+        {
+            Id = id,
+            Nombre = "Cabaña A1",
+            Activa = false,
+            ImagenStoragePath = "habitaciones/imagen123.jpg"
+        };
+        _habitacionRepoMock.Setup(r => r.GetByIdAsync(id)).ReturnsAsync(habitacion);
+        _habitacionRepoMock.Setup(r => r.HasAnyBookingsAsync(id)).ReturnsAsync(false);
+        _storageServiceMock.Setup(s => s.DeleteFileAsync("habitaciones", "imagen123.jpg"))
+            .ThrowsAsync(new Exception("Fallo de conexión al bucket"));
+
+        // Act
+        Func<Task> act = async () => await _habitacionService.DeleteAsync(id, "admin@test.com", null, null);
+
+        // Assert
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*Error al eliminar la imagen*");
+        _habitacionRepoMock.Verify(r => r.DeleteAsync(It.IsAny<Habitacion>()), Times.Never);
+        _auditoriaRepoMock.Verify(a => a.RegistrarEliminacionAsync(It.IsAny<AuditoriaEliminacion>()), Times.Never);
     }
 }

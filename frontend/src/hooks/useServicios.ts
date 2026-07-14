@@ -47,6 +47,14 @@ export const useServicios = () => {
     },
   });
 
+  // Mutation to delete service
+  const deleteMutation = useMutation({
+    mutationFn: ({ id, motivo }: { id: string; motivo?: string }) => serviciosApi.delete(id, motivo),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['servicios'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-servicios'] });
+    },
+  });
 
   return {
     services: servicesQuery.data || [],
@@ -67,5 +75,8 @@ export const useServicios = () => {
 
     toggleStatus: toggleStatusMutation.mutateAsync,
     isToggling: toggleStatusMutation.isPending,
+
+    deleteService: deleteMutation.mutateAsync,
+    isDeleting: deleteMutation.isPending,
   };
 };

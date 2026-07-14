@@ -2,16 +2,24 @@ using Villa7.Application.DTOs.Habitacion;
 using Villa7.Application.Interfaces;
 using Villa7.Domain.Entities;
 using Villa7.Domain.Interfaces.Repositories;
+using Villa7.Domain.Exceptions;
 
 namespace Villa7.Application.Services;
 
 public class HabitacionService : IHabitacionService
 {
     private readonly IHabitacionRepository _habitacionRepository;
+    private readonly IStorageService _storageService;
+    private readonly IAuditoriaRepository _auditoriaRepository;
 
-    public HabitacionService(IHabitacionRepository habitacionRepository)
+    public HabitacionService(
+        IHabitacionRepository habitacionRepository, 
+        IStorageService storageService,
+        IAuditoriaRepository auditoriaRepository)
     {
         _habitacionRepository = habitacionRepository;
+        _storageService = storageService;
+        _auditoriaRepository = auditoriaRepository;
     }
 
     public async Task<List<HabitacionDto>> ListActiveAsync(DateTime? fechaEntrada, DateTime? fechaSalida)
@@ -201,6 +209,58 @@ public class HabitacionService : IHabitacionService
         {
             return "La habitación fue activada correctamente.";
         }
+    }
+
+    public async Task DeleteAsync(Guid id, string adminEmail, string? ip, string? motivo)
+    {
+        var habitacion = await _habitacionRepository.GetByIdAsync(id);
+        if (habitacion == null)
+        {
+            throw new KeyNotFoundException("La habitación solicitada no existe.");
+        }
+
+        // 1. Validar que la habitación esté inactiva
+        if (habitacion.Activa)
+        {
+            throw new BusinessRuleException("No se puede eliminar una habitación activa. Debe desactivarse primero.");
+        }
+
+        // 2. Validar que no posea reservas (históricas, futuras, canceladas, etc.)
+        if (await _habitacionRepository.HasAnyBookingsAsync(id))
+        {
+            throw new BusinessRuleException("No es posible eliminar una habitación que posee reservas asociadas.");
+        }
+
+        // 3. Eliminar imagen del storage si existe. Si falla, abortar toda la operación.
+        if (!string.IsNullOrEmpty(habitacion.ImagenStoragePath))
+        {
+            var fileName = habitacion.ImagenStoragePath.Replace("habitaciones/", "");
+            try
+            {
+                await _storageService.DeleteFileAsync("habitaciones", fileName);
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException($"Error al eliminar la imagen de la habitación en Supabase Storage: {ex.Message}. La operación de eliminación fue cancelada.", ex);
+            }
+        }
+
+        // 4. Registrar auditoría de eliminación
+        var auditoria = new AuditoriaEliminacion
+        {
+            Id = Guid.NewGuid(),
+            Fecha = DateTime.UtcNow,
+            Administrador = adminEmail,
+            Entidad = "Habitacion",
+            EntidadId = id,
+            Nombre = habitacion.Nombre,
+            Ip = ip,
+            Motivo = motivo ?? "Eliminación administrativa de habitación"
+        };
+        await _auditoriaRepository.RegistrarEliminacionAsync(auditoria);
+
+        // 5. Eliminar el registro físicamente
+        await _habitacionRepository.DeleteAsync(habitacion);
     }
 }
 

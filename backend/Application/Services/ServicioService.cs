@@ -2,16 +2,21 @@ using Villa7.Application.DTOs.Servicio;
 using Villa7.Application.Interfaces;
 using Villa7.Domain.Entities;
 using Villa7.Domain.Interfaces.Repositories;
+using Villa7.Domain.Exceptions;
 
 namespace Villa7.Application.Services;
 
 public class ServicioService : IServicioService
 {
     private readonly IServicioRepository _servicioRepository;
+    private readonly IAuditoriaRepository _auditoriaRepository;
 
-    public ServicioService(IServicioRepository servicioRepository)
+    public ServicioService(
+        IServicioRepository servicioRepository,
+        IAuditoriaRepository auditoriaRepository)
     {
         _servicioRepository = servicioRepository;
+        _auditoriaRepository = auditoriaRepository;
     }
 
     public async Task<List<ServicioDto>> ListActiveAsync()
@@ -145,6 +150,44 @@ public class ServicioService : IServicioService
         {
             return "El servicio fue activado correctamente.";
         }
+    }
+
+    public async Task DeleteAsync(Guid id, string adminEmail, string? ip, string? motivo)
+    {
+        var servicio = await _servicioRepository.GetByIdAsync(id);
+        if (servicio == null)
+        {
+            throw new KeyNotFoundException("El servicio solicitado no existe.");
+        }
+
+        // 1. Validar que el servicio esté inactivo
+        if (servicio.Activo)
+        {
+            throw new BusinessRuleException("No se puede eliminar un servicio activo. Debe desactivarse primero.");
+        }
+
+        // 2. Validar que nunca haya sido utilizado en ninguna reserva
+        if (await _servicioRepository.HasBookingsAsync(id))
+        {
+            throw new BusinessRuleException("No es posible eliminar un servicio que posee reservas asociadas.");
+        }
+
+        // 3. Registrar auditoría de eliminación
+        var auditoria = new AuditoriaEliminacion
+        {
+            Id = Guid.NewGuid(),
+            Fecha = DateTime.UtcNow,
+            Administrador = adminEmail,
+            Entidad = "Servicio",
+            EntidadId = id,
+            Nombre = servicio.Nombre,
+            Ip = ip,
+            Motivo = motivo ?? "Eliminación administrativa de servicio"
+        };
+        await _auditoriaRepository.RegistrarEliminacionAsync(auditoria);
+
+        // 4. Eliminar físicamente
+        await _servicioRepository.DeleteAsync(servicio);
     }
 }
 

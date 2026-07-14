@@ -11,5 +11,6 @@ public interface IServicioService
     Task UpdateAsync(Guid id, EditarServicioDto dto);
     Task ToggleStatusAsync(Guid id, bool activo);
     Task<string> CambiarEstadoAsync(Guid id, bool activo, string? motivo, string adminEmail);
+    Task DeleteAsync(Guid id, string adminEmail, string? ip, string? motivo);
 }
 

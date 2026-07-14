@@ -69,5 +69,11 @@ public class ServicioRepository : IServicioRepository
         return await _context.ReservaServicios
             .AnyAsync(rs => rs.ServicioId == servicioId);
     }
+
+    public async Task DeleteAsync(Servicio servicio)
+    {
+        _context.Servicios.Remove(servicio);
+        await _context.SaveChangesAsync();
+    }
 }
 

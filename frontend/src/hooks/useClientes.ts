@@ -17,6 +17,13 @@ export const useClientes = () => {
     },
   });
 
+  const deleteMutation = useMutation({
+    mutationFn: ({ id, motivo }: { id: string; motivo?: string }) => clientesApi.delete(id, motivo),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-clientes'] });
+    },
+  });
+
   return {
     clientes: query.data || [],
     isLoading: query.isLoading,
@@ -25,6 +32,8 @@ export const useClientes = () => {
     refetch: query.refetch,
     toggleStatus: toggleStatusMutation.mutateAsync,
     isToggling: toggleStatusMutation.isPending,
+    deleteCliente: deleteMutation.mutateAsync,
+    isDeleting: deleteMutation.isPending,
   };
 };
 

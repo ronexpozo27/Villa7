@@ -378,4 +378,142 @@ test.describe('Villa7 End-to-End (E2E) Tests', () => {
     // Cerrar sesión final
     await page.click('button:has-text("Salir")');
   });
+
+  test('E2E-005: Eliminación Administrativa - Cabañas, Servicios y Clientes', async ({ page }) => {
+    // 1. Iniciar sesión como Administrador
+    await page.goto('/login');
+    await page.fill('input[name="correo"]', 'admin@villa7.com');
+    await page.fill('input[name="password"]', 'Admin123');
+    await page.click('button:has-text("Iniciar Sesión")');
+    await page.waitForURL('http://localhost:5173/');
+
+    // --- 5.1 CABAÑAS ---
+    await page.goto('/admin/habitaciones');
+    await expect(page.locator('text=Gestionar Habitaciones')).toBeVisible();
+
+    // Crear cabaña temporal (activa por defecto)
+    await page.click('button:has-text("Nueva Cabaña")');
+    const roomToDeleteName = `Habitacion Borrar E2E ${Math.random().toString(36).substring(2, 7)}`;
+    await page.fill('input[name="nombre"]', roomToDeleteName);
+    await page.fill('textarea[name="descripcion"]', 'Para borrar');
+    await page.fill('input[name="ubicacion"]', 'Ubicacion Borrado');
+    await page.fill('input[name="capacidadMax"]', '2');
+    await page.fill('input[name="precioPorNoche"]', '100.00');
+    await page.click('button:has-text("Registrar Cabaña")');
+
+    // Confirmar creación en la tabla
+    const roomRow = page.locator(`tr:has-text("${roomToDeleteName}")`);
+    await expect(roomRow).toBeVisible();
+
+    // El botón Eliminar debe estar deshabilitado porque está activa
+    const deleteRoomBtn = roomRow.locator('button[title="Eliminar"]');
+    await expect(deleteRoomBtn).toBeDisabled();
+
+    // Desactivar cabaña
+    await roomRow.locator('button:has-text("Desactivar")').click();
+    await page.fill('textarea[placeholder="Indique el motivo..."]', 'Para eliminación');
+    await page.click('button:has-text("Confirmar")');
+    await expect(roomRow.locator('text=Inactiva')).toBeVisible();
+
+    // Ahora el botón eliminar debe estar habilitado. Hacer clic en él.
+    await expect(deleteRoomBtn).toBeEnabled();
+    await deleteRoomBtn.click();
+
+    // Confirmar en el modal de eliminación
+    const deleteModal = page.locator('div.fixed.inset-0:has-text("Eliminar registro")');
+    await expect(deleteModal).toBeVisible();
+    await deleteModal.locator('button:has-text("Eliminar definitivamente")').click();
+
+    // Debe mostrar toast de éxito y desaparecer de la tabla
+    await expect(page.locator('text=Registro eliminado correctamente.')).toBeVisible();
+    await expect(roomRow).toHaveCount(0);
+
+    // --- 5.2 SERVICIOS ---
+    await page.goto('/admin/servicios');
+    await expect(page.locator('text=Gestionar Servicios Adicionales')).toBeVisible();
+
+    // Crear servicio temporal
+    await page.click('button:has-text("Nuevo Servicio")');
+    const srvToDeleteName = `Servicio Borrar E2E ${Math.random().toString(36).substring(2, 7)}`;
+    await page.fill('input[name="nombre"]', srvToDeleteName);
+    await page.fill('textarea[name="descripcion"]', 'Para borrar srv');
+    await page.fill('input[name="precio"]', '25.00');
+    await page.click('button:has-text("Registrar Servicio")');
+
+    const srvRow = page.locator(`tr:has-text("${srvToDeleteName}")`);
+    await expect(srvRow).toBeVisible();
+
+    // Botón Eliminar deshabilitado por activo
+    const deleteSrvBtn = srvRow.locator('button[title="Eliminar"]');
+    await expect(deleteSrvBtn).toBeDisabled();
+
+    // Desactivar
+    await srvRow.locator('button:has-text("Desactivar")').click();
+    await page.fill('textarea[placeholder="Indique el motivo..."]', 'Para eliminación');
+    await page.click('button:has-text("Confirmar")');
+    await expect(srvRow.locator('text=Inactivo')).toBeVisible();
+
+    // Eliminar
+    await expect(deleteSrvBtn).toBeEnabled();
+    await deleteSrvBtn.click();
+
+    const srvDeleteModal = page.locator('div.fixed.inset-0:has-text("Eliminar registro")');
+    await expect(srvDeleteModal).toBeVisible();
+    await srvDeleteModal.locator('button:has-text("Eliminar definitivamente")').click();
+
+    await expect(page.locator('text=Registro eliminado correctamente.')).toBeVisible();
+    await expect(srvRow).toHaveCount(0);
+
+    // --- 5.3 CLIENTES ---
+    await page.click('button:has-text("Salir")');
+
+    // Registrar nuevo cliente E2E
+    await page.goto('/login');
+    await page.click('text=Regístrate aquí');
+    const clientToDeleteEmail = `e2e-cli-del-${Math.random().toString(36).substring(2, 7)}@test.com`;
+    const clientToDeleteName = `Cliente Borrar E2E ${Math.random().toString(36).substring(2, 7)}`;
+    await page.fill('input[name="nombre"]', clientToDeleteName);
+    await page.fill('input[name="correo"]', clientToDeleteEmail);
+    await page.fill('input[name="password"]', 'Password123!');
+    await page.click('button:has-text("Registrarse")');
+    await page.waitForURL('http://localhost:5173/');
+    await page.click('button:has-text("Salir")');
+
+    // Volver a loguear como Admin
+    await page.goto('/login');
+    await page.fill('input[name="correo"]', 'admin@villa7.com');
+    await page.fill('input[name="password"]', 'Admin123');
+    await page.click('button:has-text("Iniciar Sesión")');
+    await page.waitForURL('http://localhost:5173/');
+
+    await page.goto('/admin/clientes');
+    await expect(page.locator('h2:has-text("Clientes Registrados")')).toBeVisible();
+
+    const cliRow = page.locator(`tr:has-text("${clientToDeleteName}")`);
+    await expect(cliRow).toBeVisible();
+
+    // Botón Eliminar deshabilitado por activo
+    const deleteCliBtn = cliRow.locator('button[title="Eliminar"]');
+    await expect(deleteCliBtn).toBeDisabled();
+
+    // Desactivar
+    await cliRow.locator('button:has-text("Desactivar")').click();
+    await page.fill('textarea[placeholder="Indique el motivo..."]', 'Para eliminación cli');
+    await page.click('button:has-text("Confirmar")');
+    await expect(cliRow.locator('text=Inactivo')).toBeVisible();
+
+    // Eliminar
+    await expect(deleteCliBtn).toBeEnabled();
+    await deleteCliBtn.click();
+
+    const cliDeleteModal = page.locator('div.fixed.inset-0:has-text("Eliminar registro")');
+    await expect(cliDeleteModal).toBeVisible();
+    await cliDeleteModal.locator('button:has-text("Eliminar definitivamente")').click();
+
+    await expect(page.locator('text=Registro eliminado correctamente.')).toBeVisible();
+    await expect(cliRow).toHaveCount(0);
+
+    // Salir
+    await page.click('button:has-text("Salir")');
+  });
 });

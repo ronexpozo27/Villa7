@@ -89,4 +89,15 @@ public class HabitacionRepository : IHabitacionRepository
                            (r.Estado == "Pendiente" || r.Estado == "Confirmada") &&
                            r.FechaSalida >= today);
     }
+
+    public async Task DeleteAsync(Habitacion habitacion)
+    {
+        _context.Habitaciones.Remove(habitacion);
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task<bool> HasAnyBookingsAsync(Guid habitacionId)
+    {
+        return await _context.Reservas.AnyAsync(r => r.HabitacionId == habitacionId);
+    }
 }

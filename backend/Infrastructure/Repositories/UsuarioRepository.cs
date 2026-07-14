@@ -56,4 +56,15 @@ public class UsuarioRepository : IUsuarioRepository
             .OrderBy(u => u.Nombre)
             .ToListAsync();
     }
+
+    public async Task DeleteAsync(Usuario usuario)
+    {
+        _context.Usuarios.Remove(usuario);
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task<bool> HasAnyBookingsAsync(Guid usuarioId)
+    {
+        return await _context.Reservas.AnyAsync(r => r.UsuarioId == usuarioId);
+    }
 }

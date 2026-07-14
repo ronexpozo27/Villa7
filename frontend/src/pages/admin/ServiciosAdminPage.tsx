@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import type { Servicio } from '../../types';
-import { ShieldAlert, Plus, Edit2, X, Sparkles } from 'lucide-react';
+import { ShieldAlert, Plus, Edit2, X, Sparkles, Trash2 } from 'lucide-react';
 import { formatCurrency } from '../../utils/format';
 
 const serviceSchema = z.object({
@@ -28,11 +28,14 @@ export const ServiciosAdminPage: React.FC = () => {
     createService,
     updateService,
     toggleStatus,
+    deleteService,
+    isDeleting,
   } = useServicios();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingService, setEditingService] = useState<Servicio | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [serviceToDelete, setServiceToDelete] = useState<Servicio | null>(null);
 
   // Filtros de estado
   const [statusFilter, setStatusFilter] = useState<'Todos' | 'Activos' | 'Inactivos'>('Todos');
@@ -109,6 +112,23 @@ export const ServiciosAdminPage: React.FC = () => {
     } catch (e: any) {
       setToastType('error');
       setToastMessage(e.message || 'No se pudo cambiar el estado del servicio.');
+      setIsToastOpen(true);
+    }
+  };
+
+  const handleDeleteService = async () => {
+    if (!serviceToDelete) return;
+    try {
+      await deleteService({ id: serviceToDelete.id });
+      setToastType('success');
+      setToastMessage('Registro eliminado correctamente.');
+      setIsToastOpen(true);
+      setServiceToDelete(null);
+      fetchAdminServices();
+    } catch (e: any) {
+      setToastType('error');
+      const apiMsg = e.response?.data?.message || e.message || 'No fue posible eliminar el registro.';
+      setToastMessage(apiMsg);
       setIsToastOpen(true);
     }
   };
@@ -216,6 +236,18 @@ export const ServiciosAdminPage: React.FC = () => {
                         title="Editar"
                       >
                         <Edit2 className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => setServiceToDelete(service)}
+                        disabled={service.activo}
+                        className={`p-2 border rounded-lg transition-colors cursor-pointer ${
+                          service.activo
+                            ? 'opacity-40 cursor-not-allowed bg-white/5 border-white/5 text-gray-500'
+                            : 'bg-white/5 border-white/10 hover:border-red-500 hover:bg-red-950/20 text-gray-300 hover:text-red-500'
+                        }`}
+                        title="Eliminar"
+                      >
+                        <Trash2 className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => handleOpenConfirmStatus(service)}
@@ -335,8 +367,8 @@ export const ServiciosAdminPage: React.FC = () => {
             </h3>
             <p className="text-gray-400 text-xs">
               {confirmingService.activo 
-                ? 'Al desactivarlo, no se podrá añadir a nuevas reservas. Las reservas que ya lo posean contratado mantendrán el servicio de forma histórica.'
-                : 'Al activarlo, volverá a estar disponible para contratación pública.'}
+                ? 'Al desactivarlo, no se podrá agregar a nuevas reservas de clientes.'
+                : 'Al activarlo, volverá a estar disponible para el público.'}
             </p>
             <div className="flex flex-col gap-1.5 mt-2">
               <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
@@ -368,6 +400,42 @@ export const ServiciosAdminPage: React.FC = () => {
                 }`}
               >
                 Confirmar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de confirmación de Eliminación */}
+      {serviceToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fade-in">
+          <div className="glass-panel p-6 rounded-2xl max-w-md w-full shadow-2xl border border-white/10 flex flex-col gap-4">
+            <h3 className="text-lg font-bold font-heading text-white">
+              Eliminar registro
+            </h3>
+            <p className="text-gray-400 text-xs">
+              Esta acción eliminará permanentemente el registro.
+              <br />
+              Solo podrá eliminarse si no posee relaciones con otras entidades del sistema.
+              <br />
+              Esta acción no puede deshacerse.
+            </p>
+            <div className="flex justify-end gap-3 pt-3 border-t border-white/5 mt-2">
+              <button
+                type="button"
+                onClick={() => setServiceToDelete(null)}
+                disabled={isDeleting}
+                className="px-4 py-2 text-xs font-semibold rounded-lg bg-white/5 border border-white/10 text-gray-300 hover:bg-white/10 hover:text-white transition-colors cursor-pointer disabled:opacity-50"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={handleDeleteService}
+                disabled={isDeleting}
+                className="px-4 py-2 text-xs font-semibold rounded-lg bg-red-500 hover:bg-red-600 text-white transition-all cursor-pointer shadow-md shadow-red-500/10 disabled:opacity-50 flex items-center gap-1.5"
+              >
+                {isDeleting ? 'Eliminando...' : 'Eliminar definitivamente'}
               </button>
             </div>
           </div>

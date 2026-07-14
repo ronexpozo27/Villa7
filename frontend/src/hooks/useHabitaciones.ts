@@ -67,6 +67,15 @@ export const useHabitaciones = (fechaEntrada?: string, fechaSalida?: string) => 
     },
   });
 
+  // Mutation to delete room
+  const deleteMutation = useMutation({
+    mutationFn: ({ id, motivo }: { id: string; motivo?: string }) => habitacionesApi.delete(id, motivo),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['habitaciones'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-habitaciones'] });
+    },
+  });
+
   return {
     rooms: roomsQuery.data || [],
     isLoading: roomsQuery.isLoading,
@@ -92,6 +101,9 @@ export const useHabitaciones = (fechaEntrada?: string, fechaSalida?: string) => 
 
     deleteImage: deleteImageMutation.mutateAsync,
     isDeletingImage: deleteImageMutation.isPending,
+
+    deleteRoom: deleteMutation.mutateAsync,
+    isDeleting: deleteMutation.isPending,
   };
 };
 

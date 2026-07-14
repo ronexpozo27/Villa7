@@ -13,4 +13,6 @@ public interface IHabitacionRepository
     Task UpdateAsync(Habitacion habitacion);
     Task<bool> NombreExistsAsync(string nombre, Guid? excludeId = null);
     Task<bool> HasFutureBookingsAsync(Guid habitacionId);
+    Task DeleteAsync(Habitacion habitacion);
+    Task<bool> HasAnyBookingsAsync(Guid habitacionId);
 }

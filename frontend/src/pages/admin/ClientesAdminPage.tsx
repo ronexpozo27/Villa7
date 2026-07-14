@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useClientes } from '../../hooks/useClientes';
-import { ShieldAlert, Users, CalendarDays } from 'lucide-react';
+import { ShieldAlert, Users, CalendarDays, Trash2 } from 'lucide-react';
 import type { Usuario } from '../../types';
 
 export const ClientesAdminPage: React.FC = () => {
-  const { clientes, isLoading, isError, error, toggleStatus } = useClientes();
+  const { clientes, isLoading, isError, error, toggleStatus, deleteCliente, isDeleting, refetch } = useClientes();
 
   // Filtros de estado
   const [statusFilter, setStatusFilter] = useState<'Todos' | 'Activos' | 'Inactivos'>('Todos');
@@ -12,6 +12,7 @@ export const ClientesAdminPage: React.FC = () => {
   // Confirmar cambio de estado
   const [confirmingCliente, setConfirmingCliente] = useState<Usuario | null>(null);
   const [statusMotive, setStatusMotive] = useState('');
+  const [clientToDelete, setClientToDelete] = useState<Usuario | null>(null);
 
   // Toast notifications
   const [isToastOpen, setIsToastOpen] = useState(false);
@@ -56,6 +57,23 @@ export const ClientesAdminPage: React.FC = () => {
     } catch (e: any) {
       setToastType('error');
       setToastMessage(e.message || 'No se pudo cambiar el estado del cliente.');
+      setIsToastOpen(true);
+    }
+  };
+
+  const handleDeleteCliente = async () => {
+    if (!clientToDelete) return;
+    try {
+      await deleteCliente({ id: clientToDelete.id });
+      setToastType('success');
+      setToastMessage('Registro eliminado correctamente.');
+      setIsToastOpen(true);
+      setClientToDelete(null);
+      refetch();
+    } catch (e: any) {
+      setToastType('error');
+      const apiMsg = e.response?.data?.message || e.message || 'No fue posible eliminar el registro.';
+      setToastMessage(apiMsg);
       setIsToastOpen(true);
     }
   };
@@ -143,7 +161,19 @@ export const ClientesAdminPage: React.FC = () => {
                           <span>{formatDate(cliente.fechaCreacion)}</span>
                         </div>
                       </td>
-                      <td className="p-4 pr-6 text-right">
+                      <td className="p-4 pr-6 text-right flex items-center justify-end gap-2">
+                        <button
+                          onClick={() => setClientToDelete(cliente)}
+                          disabled={isActivo}
+                          className={`p-2 border rounded-lg transition-colors cursor-pointer ${
+                            isActivo
+                              ? 'opacity-40 cursor-not-allowed bg-white/5 border-white/5 text-gray-500'
+                              : 'bg-white/5 border-white/10 hover:border-red-500 hover:bg-red-950/20 text-gray-300 hover:text-red-500'
+                          }`}
+                          title="Eliminar"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
                         <button
                           onClick={() => handleOpenConfirmStatus(cliente)}
                           className={`px-3 py-2 border rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
@@ -206,6 +236,42 @@ export const ClientesAdminPage: React.FC = () => {
                 }`}
               >
                 Confirmar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de confirmación de Eliminación */}
+      {clientToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fade-in">
+          <div className="glass-panel p-6 rounded-2xl max-w-md w-full shadow-2xl border border-white/10 flex flex-col gap-4">
+            <h3 className="text-lg font-bold font-heading text-white">
+              Eliminar registro
+            </h3>
+            <p className="text-gray-400 text-xs">
+              Esta action eliminará permanentemente el registro.
+              <br />
+              Solo podrá eliminarse si no posee relaciones con otras entidades del sistema.
+              <br />
+              Esta acción no puede deshacerse.
+            </p>
+            <div className="flex justify-end gap-3 pt-3 border-t border-white/5 mt-2">
+              <button
+                type="button"
+                onClick={() => setClientToDelete(null)}
+                disabled={isDeleting}
+                className="px-4 py-2 text-xs font-semibold rounded-lg bg-white/5 border border-white/10 text-gray-300 hover:bg-white/10 hover:text-white transition-colors cursor-pointer disabled:opacity-50"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={handleDeleteCliente}
+                disabled={isDeleting}
+                className="px-4 py-2 text-xs font-semibold rounded-lg bg-red-500 hover:bg-red-600 text-white transition-all cursor-pointer shadow-md shadow-red-500/10 disabled:opacity-50 flex items-center gap-1.5"
+              >
+                {isDeleting ? 'Eliminando...' : 'Eliminar definitivamente'}
               </button>
             </div>
           </div>

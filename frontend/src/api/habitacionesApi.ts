@@ -52,4 +52,11 @@ export const habitacionesApi = {
     const response = await axiosClient.delete<Habitacion>(`/habitaciones/${id}/imagen`);
     return response.data;
   },
+
+  delete: async (id: string, motivo?: string): Promise<{ message: string }> => {
+    const response = await axiosClient.delete<{ message: string }>(`/habitaciones/${id}`, {
+      params: motivo ? { motivo } : undefined,
+    });
+    return response.data;
+  },
 };

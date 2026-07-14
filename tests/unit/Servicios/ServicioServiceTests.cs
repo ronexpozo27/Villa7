@@ -9,17 +9,21 @@ using Villa7.Domain.Entities;
 using Villa7.Domain.Interfaces.Repositories;
 using Xunit;
 
+using Villa7.Domain.Exceptions;
+
 namespace Villa7.UnitTests.Servicios;
 
 public class ServicioServiceTests
 {
     private readonly Mock<IServicioRepository> _servicioRepoMock;
+    private readonly Mock<IAuditoriaRepository> _auditoriaRepoMock;
     private readonly ServicioService _servicioService;
 
     public ServicioServiceTests()
     {
         _servicioRepoMock = new Mock<IServicioRepository>();
-        _servicioService = new ServicioService(_servicioRepoMock.Object);
+        _auditoriaRepoMock = new Mock<IAuditoriaRepository>();
+        _servicioService = new ServicioService(_servicioRepoMock.Object, _auditoriaRepoMock.Object);
     }
 
     [Fact]
@@ -150,5 +154,64 @@ public class ServicioServiceTests
         // Assert
         await act.Should().ThrowAsync<KeyNotFoundException>()
             .WithMessage("El servicio solicitado no existe.");
+    }
+
+    [Fact]
+    public async Task DeleteAsync_InactiveAndNoBookings_ShouldDeleteSuccessfullyAndRegisterAudit()
+    {
+        // Arrange
+        var id = Guid.NewGuid();
+        var servicio = new Servicio { Id = id, Nombre = "Paseo en bote", Activo = false };
+        _servicioRepoMock.Setup(r => r.GetByIdAsync(id)).ReturnsAsync(servicio);
+        _servicioRepoMock.Setup(r => r.HasBookingsAsync(id)).ReturnsAsync(false);
+
+        // Act
+        await _servicioService.DeleteAsync(id, "admin@test.com", "127.0.0.1", "Borrado E2E");
+
+        // Assert
+        _servicioRepoMock.Verify(r => r.DeleteAsync(servicio), Times.Once);
+        _auditoriaRepoMock.Verify(a => a.RegistrarEliminacionAsync(It.Is<AuditoriaEliminacion>(x => 
+            x.Entidad == "Servicio" && 
+            x.EntidadId == id && 
+            x.Nombre == "Paseo en bote" && 
+            x.Administrador == "admin@test.com" &&
+            x.Ip == "127.0.0.1" &&
+            x.Motivo == "Borrado E2E"
+        )), Times.Once);
+    }
+
+    [Fact]
+    public async Task DeleteAsync_WhenActive_ShouldThrowBusinessRuleException()
+    {
+        // Arrange
+        var id = Guid.NewGuid();
+        var servicio = new Servicio { Id = id, Nombre = "Spa", Activo = true };
+        _servicioRepoMock.Setup(r => r.GetByIdAsync(id)).ReturnsAsync(servicio);
+
+        // Act
+        Func<Task> act = async () => await _servicioService.DeleteAsync(id, "admin@test.com", null, null);
+
+        // Assert
+        await act.Should().ThrowAsync<BusinessRuleException>()
+            .WithMessage("No se puede eliminar un servicio activo. Debe desactivarse primero.");
+        _servicioRepoMock.Verify(r => r.DeleteAsync(It.IsAny<Servicio>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task DeleteAsync_WhenHasBookings_ShouldThrowBusinessRuleException()
+    {
+        // Arrange
+        var id = Guid.NewGuid();
+        var servicio = new Servicio { Id = id, Nombre = "Almuerzo", Activo = false };
+        _servicioRepoMock.Setup(r => r.GetByIdAsync(id)).ReturnsAsync(servicio);
+        _servicioRepoMock.Setup(r => r.HasBookingsAsync(id)).ReturnsAsync(true);
+
+        // Act
+        Func<Task> act = async () => await _servicioService.DeleteAsync(id, "admin@test.com", null, null);
+
+        // Assert
+        await act.Should().ThrowAsync<BusinessRuleException>()
+            .WithMessage("No es posible eliminar un servicio que posee reservas asociadas.");
+        _servicioRepoMock.Verify(r => r.DeleteAsync(It.IsAny<Servicio>()), Times.Never);
     }
 }

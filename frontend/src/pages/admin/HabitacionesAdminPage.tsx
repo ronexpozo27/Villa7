@@ -45,11 +45,14 @@ export const HabitacionesAdminPage: React.FC = () => {
     isUploadingImage,
     deleteImage,
     isDeletingImage,
+    deleteRoom,
+    isDeleting,
   } = useHabitaciones();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingRoom, setEditingRoom] = useState<Habitacion | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [roomToDelete, setRoomToDelete] = useState<Habitacion | null>(null);
 
   // Filtros de estado
   const [statusFilter, setStatusFilter] = useState<'Todas' | 'Activas' | 'Inactivas'>('Todas');
@@ -148,6 +151,23 @@ export const HabitacionesAdminPage: React.FC = () => {
     } catch (e: any) {
       setToastType('error');
       setToastMessage(e.message || 'No se pudo cambiar el estado de la cabaña.');
+      setIsToastOpen(true);
+    }
+  };
+
+  const handleDeleteRoom = async () => {
+    if (!roomToDelete) return;
+    try {
+      await deleteRoom({ id: roomToDelete.id });
+      setToastType('success');
+      setToastMessage('Registro eliminado correctamente.');
+      setIsToastOpen(true);
+      setRoomToDelete(null);
+      fetchAdminRooms();
+    } catch (e: any) {
+      setToastType('error');
+      const apiMsg = e.response?.data?.message || e.message || 'No fue posible eliminar el registro.';
+      setToastMessage(apiMsg);
       setIsToastOpen(true);
     }
   };
@@ -347,6 +367,18 @@ export const HabitacionesAdminPage: React.FC = () => {
                         title="Editar"
                       >
                         <Edit2 className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => setRoomToDelete(room)}
+                        disabled={room.activa}
+                        className={`p-2 border rounded-lg transition-colors cursor-pointer ${
+                          room.activa
+                            ? 'opacity-40 cursor-not-allowed bg-white/5 border-white/5 text-gray-500'
+                            : 'bg-white/5 border-white/10 hover:border-red-500 hover:bg-red-950/20 text-gray-300 hover:text-red-500'
+                        }`}
+                        title="Eliminar"
+                      >
+                        <Trash2 className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => handleOpenConfirmStatus(room)}
@@ -663,6 +695,42 @@ export const HabitacionesAdminPage: React.FC = () => {
                 }`}
               >
                 Confirmar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de confirmación de Eliminación */}
+      {roomToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fade-in">
+          <div className="glass-panel p-6 rounded-2xl max-w-md w-full shadow-2xl border border-white/10 flex flex-col gap-4">
+            <h3 className="text-lg font-bold font-heading text-white">
+              Eliminar registro
+            </h3>
+            <p className="text-gray-400 text-xs">
+              Esta acción eliminará permanentemente el registro.
+              <br />
+              Solo podrá eliminarse si no posee relaciones con otras entidades del sistema.
+              <br />
+              Esta acción no puede deshacerse.
+            </p>
+            <div className="flex justify-end gap-3 pt-3 border-t border-white/5 mt-2">
+              <button
+                type="button"
+                onClick={() => setRoomToDelete(null)}
+                disabled={isDeleting}
+                className="px-4 py-2 text-xs font-semibold rounded-lg bg-white/5 border border-white/10 text-gray-300 hover:bg-white/10 hover:text-white transition-colors cursor-pointer disabled:opacity-50"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={handleDeleteRoom}
+                disabled={isDeleting}
+                className="px-4 py-2 text-xs font-semibold rounded-lg bg-red-500 hover:bg-red-600 text-white transition-all cursor-pointer shadow-md shadow-red-500/10 disabled:opacity-50 flex items-center gap-1.5"
+              >
+                {isDeleting ? 'Eliminando...' : 'Eliminar definitivamente'}
               </button>
             </div>
           </div>

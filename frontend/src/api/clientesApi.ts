@@ -16,5 +16,12 @@ export const clientesApi = {
     const response = await axiosClient.patch<any>(`/clientes/${id}/estado`, payload);
     return response.data;
   },
+
+  delete: async (id: string, motivo?: string): Promise<{ message: string }> => {
+    const response = await axiosClient.delete<{ message: string }>(`/clientes/${id}`, {
+      params: motivo ? { motivo } : undefined,
+    });
+    return response.data;
+  },
 };
 

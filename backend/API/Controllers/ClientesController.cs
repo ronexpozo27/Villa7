@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Villa7.Application.Interfaces;
+using Villa7.Domain.Exceptions;
 
 namespace Villa7.API.Controllers;
 
@@ -90,6 +91,34 @@ public class ClientesController : ControllerBase
         catch (Exception ex)
         {
             return StatusCode(500, new { message = "Ocurrió un error al cambiar el estado del cliente.", details = ex.Message });
+        }
+     }
+
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> Delete(Guid id, [FromQuery] string? motivo)
+    {
+        try
+        {
+            var adminEmail = User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value 
+                             ?? User.FindFirst("email")?.Value 
+                             ?? "admin@villa7.com";
+            
+            var ip = HttpContext.Connection.RemoteIpAddress?.ToString();
+
+            await _clienteService.DeleteAsync(id, adminEmail, ip, motivo);
+            return Ok(new { message = "Registro eliminado correctamente." });
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { status = 404, message = ex.Message });
+        }
+        catch (BusinessRuleException ex)
+        {
+            return Conflict(new { status = 409, message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { message = "No fue posible eliminar el registro.", details = ex.Message });
         }
     }
 }

@@ -11,5 +11,6 @@ public interface IHabitacionService
     Task UpdateAsync(Guid id, EditarHabitacionDto dto);
     Task ToggleStatusAsync(Guid id, bool activa);
     Task<string> CambiarEstadoAsync(Guid id, bool activa, string? motivo, string adminEmail);
+    Task DeleteAsync(Guid id, string adminEmail, string? ip, string? motivo);
 }
 
