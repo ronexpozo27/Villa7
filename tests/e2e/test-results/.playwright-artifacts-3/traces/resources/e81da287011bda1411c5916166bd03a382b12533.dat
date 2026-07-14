@@ -1,0 +1,76 @@
+import { createHotContext as __vite__createHotContext } from "/@vite/client";import.meta.hot = __vite__createHotContext("/src/router/AdminRoute.tsx");const React = __vite__cjsImport0_react;const _jsxDEV = __vite__cjsImport3_react_jsxDevRuntime["jsxDEV"];import __vite__cjsImport0_react from "/node_modules/.vite/deps/react.js?v=dfa5fc7e";
+import { Navigate, Outlet } from "/node_modules/.vite/deps/react-router-dom.js?v=dfa5fc7e";
+import { useAuth } from "/src/hooks/useAuth.ts";
+var _jsxFileName = "C:/Users/Asus Core i5/.gemini/antigravity/scratch/Villa7/frontend/src/router/AdminRoute.tsx";
+import __vite__cjsImport3_react_jsxDevRuntime from "/node_modules/.vite/deps/react_jsx-dev-runtime.js?v=dfa5fc7e";
+var _s = $RefreshSig$();
+export const AdminRoute = () => {
+	_s();
+	const { accessToken, usuario, isLoading } = useAuth();
+	if (isLoading) {
+		return /* @__PURE__ */ _jsxDEV("div", {
+			className: "min-h-screen flex items-center justify-center bg-bg-dark",
+			children: /* @__PURE__ */ _jsxDEV("div", { className: "animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-accent-emerald" }, void 0, false, {
+				fileName: _jsxFileName,
+				lineNumber: 11,
+				columnNumber: 9
+			}, this)
+		}, void 0, false, {
+			fileName: _jsxFileName,
+			lineNumber: 10,
+			columnNumber: 7
+		}, this);
+	}
+	if (!accessToken) {
+		return /* @__PURE__ */ _jsxDEV(Navigate, {
+			to: "/login",
+			replace: true
+		}, void 0, false, {
+			fileName: _jsxFileName,
+			lineNumber: 17,
+			columnNumber: 12
+		}, this);
+	}
+	return usuario?.rol === "Administrador" ? /* @__PURE__ */ _jsxDEV(Outlet, {}, void 0, false, {
+		fileName: _jsxFileName,
+		lineNumber: 20,
+		columnNumber: 45
+	}, this) : /* @__PURE__ */ _jsxDEV(Navigate, {
+		to: "/",
+		replace: true
+	}, void 0, false, {
+		fileName: _jsxFileName,
+		lineNumber: 20,
+		columnNumber: 58
+	}, this);
+};
+_s(AdminRoute, "LvbQ1rQNSXcZiWHP0k976E6xaA0=", false, function() {
+	return [useAuth];
+});
+_c = AdminRoute;
+var _c;
+$RefreshReg$(_c, "AdminRoute");
+import * as RefreshRuntime from "/@react-refresh";
+const inWebWorker = typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope;
+import * as __vite_react_currentExports from "/src/router/AdminRoute.tsx";
+if (import.meta.hot && !inWebWorker) {
+  if (!window.$RefreshReg$) {
+    throw new Error(
+      "@vitejs/plugin-react can't detect preamble. Something is wrong."
+    );
+  }
+
+  const currentExports = __vite_react_currentExports;
+  queueMicrotask(() => {
+    RefreshRuntime.registerExportsForReactRefresh("C:/Users/Asus Core i5/.gemini/antigravity/scratch/Villa7/frontend/src/router/AdminRoute.tsx", currentExports);
+    import.meta.hot.accept((nextExports) => {
+      if (!nextExports) return;
+      const invalidateMessage = RefreshRuntime.validateRefreshBoundaryAndEnqueueUpdate("C:/Users/Asus Core i5/.gemini/antigravity/scratch/Villa7/frontend/src/router/AdminRoute.tsx", currentExports, nextExports);
+      if (invalidateMessage) import.meta.hot.invalidate(invalidateMessage);
+    });
+  });
+}
+function $RefreshReg$(type, id) { return RefreshRuntime.register(type, "C:/Users/Asus Core i5/.gemini/antigravity/scratch/Villa7/frontend/src/router/AdminRoute.tsx" + ' ' + id); }
+function $RefreshSig$() { return RefreshRuntime.createSignatureFunctionForTransform(); }
+
+//# sourceMappingURL=data:application/json;base64,eyJtYXBwaW5ncyI6IkFBQUEsT0FBTyxXQUFXO0FBQ2xCLFNBQVMsVUFBVSxjQUFjO0FBQ2pDLFNBQVMsZUFBZTs7OztBQUV4QixPQUFPLE1BQU0sbUJBQTZCOztDQUN4QyxNQUFNLEVBQUUsYUFBYSxTQUFTLGNBQWMsUUFBUTtDQUVwRCxJQUFJLFdBQVc7RUFDYixPQUNFLHdCQUFDLE9BQUQ7R0FBSyxXQUFVO2FBQ2Isd0JBQUMsT0FBRCxFQUFLLFdBQVUsa0ZBQXVGOzs7OztFQUNuRzs7Ozs7Q0FFVDtDQUVBLElBQUksQ0FBQyxhQUFhO0VBQ2hCLE9BQU8sd0JBQUMsVUFBRDtHQUFVLElBQUc7R0FBUztFQUFTOzs7OztDQUN4QztDQUVBLE9BQU8sU0FBUyxRQUFRLGtCQUFrQix3QkFBQyxRQUFELENBQVM7Ozs7WUFBSSx3QkFBQyxVQUFEO0VBQVUsSUFBRztFQUFJO0NBQVM7Ozs7O0FBQ25GIiwibmFtZXMiOltdLCJzb3VyY2VzIjpbIkFkbWluUm91dGUudHN4Il0sInZlcnNpb24iOjMsInNvdXJjZXNDb250ZW50IjpbImltcG9ydCBSZWFjdCBmcm9tICdyZWFjdCc7XG5pbXBvcnQgeyBOYXZpZ2F0ZSwgT3V0bGV0IH0gZnJvbSAncmVhY3Qtcm91dGVyLWRvbSc7XG5pbXBvcnQgeyB1c2VBdXRoIH0gZnJvbSAnLi4vaG9va3MvdXNlQXV0aCc7XG5cbmV4cG9ydCBjb25zdCBBZG1pblJvdXRlOiBSZWFjdC5GQyA9ICgpID0+IHtcbiAgY29uc3QgeyBhY2Nlc3NUb2tlbiwgdXN1YXJpbywgaXNMb2FkaW5nIH0gPSB1c2VBdXRoKCk7XG5cbiAgaWYgKGlzTG9hZGluZykge1xuICAgIHJldHVybiAoXG4gICAgICA8ZGl2IGNsYXNzTmFtZT1cIm1pbi1oLXNjcmVlbiBmbGV4IGl0ZW1zLWNlbnRlciBqdXN0aWZ5LWNlbnRlciBiZy1iZy1kYXJrXCI+XG4gICAgICAgIDxkaXYgY2xhc3NOYW1lPVwiYW5pbWF0ZS1zcGluIHJvdW5kZWQtZnVsbCBoLTEyIHctMTIgYm9yZGVyLXQtMiBib3JkZXItYi0yIGJvcmRlci1hY2NlbnQtZW1lcmFsZFwiPjwvZGl2PlxuICAgICAgPC9kaXY+XG4gICAgKTtcbiAgfVxuXG4gIGlmICghYWNjZXNzVG9rZW4pIHtcbiAgICByZXR1cm4gPE5hdmlnYXRlIHRvPVwiL2xvZ2luXCIgcmVwbGFjZSAvPjtcbiAgfVxuXG4gIHJldHVybiB1c3VhcmlvPy5yb2wgPT09ICdBZG1pbmlzdHJhZG9yJyA/IDxPdXRsZXQgLz4gOiA8TmF2aWdhdGUgdG89XCIvXCIgcmVwbGFjZSAvPjtcbn07XG4iXX0=

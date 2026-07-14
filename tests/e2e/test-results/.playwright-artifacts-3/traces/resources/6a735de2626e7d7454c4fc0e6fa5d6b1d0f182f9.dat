@@ -1,0 +1,11 @@
+const useContext = __vite__cjsImport0_react["useContext"];import __vite__cjsImport0_react from "/node_modules/.vite/deps/react.js?v=dfa5fc7e";
+import { AuthContext } from "/src/context/AuthContext.tsx";
+export const useAuth = () => {
+	const context = useContext(AuthContext);
+	if (context === undefined) {
+		throw new Error("useAuth debe utilizarse dentro de un AuthProvider");
+	}
+	return context;
+};
+
+//# sourceMappingURL=data:application/json;base64,eyJtYXBwaW5ncyI6IkFBQUEsU0FBUyxrQkFBa0I7QUFDM0IsU0FBUyxtQkFBbUI7QUFFNUIsT0FBTyxNQUFNLGdCQUFnQjtDQUMzQixNQUFNLFVBQVUsV0FBVyxXQUFXO0NBQ3RDLElBQUksWUFBWSxXQUFXO0VBQ3pCLE1BQU0sSUFBSSxNQUFNLG1EQUFtRDtDQUNyRTtDQUNBLE9BQU87QUFDVCIsIm5hbWVzIjpbXSwic291cmNlcyI6WyJ1c2VBdXRoLnRzIl0sInZlcnNpb24iOjMsInNvdXJjZXNDb250ZW50IjpbImltcG9ydCB7IHVzZUNvbnRleHQgfSBmcm9tICdyZWFjdCc7XG5pbXBvcnQgeyBBdXRoQ29udGV4dCB9IGZyb20gJy4uL2NvbnRleHQvQXV0aENvbnRleHQnO1xuXG5leHBvcnQgY29uc3QgdXNlQXV0aCA9ICgpID0+IHtcbiAgY29uc3QgY29udGV4dCA9IHVzZUNvbnRleHQoQXV0aENvbnRleHQpO1xuICBpZiAoY29udGV4dCA9PT0gdW5kZWZpbmVkKSB7XG4gICAgdGhyb3cgbmV3IEVycm9yKCd1c2VBdXRoIGRlYmUgdXRpbGl6YXJzZSBkZW50cm8gZGUgdW4gQXV0aFByb3ZpZGVyJyk7XG4gIH1cbiAgcmV0dXJuIGNvbnRleHQ7XG59O1xuIl19

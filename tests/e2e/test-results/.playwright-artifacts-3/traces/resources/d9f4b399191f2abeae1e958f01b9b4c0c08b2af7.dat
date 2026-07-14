@@ -1,0 +1,56 @@
+import { createHotContext as __vite__createHotContext } from "/@vite/client";import.meta.hot = __vite__createHotContext("/src/App.tsx");const _jsxDEV = __vite__cjsImport3_react_jsxDevRuntime["jsxDEV"];import { QueryClient, QueryClientProvider } from "/node_modules/.vite/deps/@tanstack_react-query.js?v=dfa5fc7e";
+import { AuthProvider } from "/src/context/AuthContext.tsx";
+import { AppRouter } from "/src/router/AppRouter.tsx";
+var _jsxFileName = "C:/Users/Asus Core i5/.gemini/antigravity/scratch/Villa7/frontend/src/App.tsx";
+import __vite__cjsImport3_react_jsxDevRuntime from "/node_modules/.vite/deps/react_jsx-dev-runtime.js?v=dfa5fc7e";
+// Create a client for TanStack Query
+const queryClient = new QueryClient({ defaultOptions: { queries: {
+	refetchOnWindowFocus: false,
+	retry: 1
+} } });
+function App() {
+	return /* @__PURE__ */ _jsxDEV(QueryClientProvider, {
+		client: queryClient,
+		children: /* @__PURE__ */ _jsxDEV(AuthProvider, { children: /* @__PURE__ */ _jsxDEV(AppRouter, {}, void 0, false, {
+			fileName: _jsxFileName,
+			lineNumber: 19,
+			columnNumber: 9
+		}, this) }, void 0, false, {
+			fileName: _jsxFileName,
+			lineNumber: 18,
+			columnNumber: 7
+		}, this)
+	}, void 0, false, {
+		fileName: _jsxFileName,
+		lineNumber: 17,
+		columnNumber: 5
+	}, this);
+}
+_c = App;
+export default App;
+var _c;
+$RefreshReg$(_c, "App");
+import * as RefreshRuntime from "/@react-refresh";
+const inWebWorker = typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope;
+import * as __vite_react_currentExports from "/src/App.tsx";
+if (import.meta.hot && !inWebWorker) {
+  if (!window.$RefreshReg$) {
+    throw new Error(
+      "@vitejs/plugin-react can't detect preamble. Something is wrong."
+    );
+  }
+
+  const currentExports = __vite_react_currentExports;
+  queueMicrotask(() => {
+    RefreshRuntime.registerExportsForReactRefresh("C:/Users/Asus Core i5/.gemini/antigravity/scratch/Villa7/frontend/src/App.tsx", currentExports);
+    import.meta.hot.accept((nextExports) => {
+      if (!nextExports) return;
+      const invalidateMessage = RefreshRuntime.validateRefreshBoundaryAndEnqueueUpdate("C:/Users/Asus Core i5/.gemini/antigravity/scratch/Villa7/frontend/src/App.tsx", currentExports, nextExports);
+      if (invalidateMessage) import.meta.hot.invalidate(invalidateMessage);
+    });
+  });
+}
+function $RefreshReg$(type, id) { return RefreshRuntime.register(type, "C:/Users/Asus Core i5/.gemini/antigravity/scratch/Villa7/frontend/src/App.tsx" + ' ' + id); }
+function $RefreshSig$() { return RefreshRuntime.createSignatureFunctionForTransform(); }
+
+//# sourceMappingURL=data:application/json;base64,eyJtYXBwaW5ncyI6IkFBQUEsU0FBUyxhQUFhLDJCQUEyQjtBQUNqRCxTQUFTLG9CQUFvQjtBQUM3QixTQUFTLGlCQUFpQjs7OztBQUcxQixNQUFNLGNBQWMsSUFBSSxZQUFZLEVBQ2xDLGdCQUFnQixFQUNkLFNBQVM7Q0FDUCxzQkFBc0I7Q0FDdEIsT0FBTztBQUNULEVBQ0YsRUFDRixDQUFDO0FBRUQsU0FBUyxNQUFNO0NBQ2IsT0FDRSx3QkFBQyxxQkFBRDtFQUFxQixRQUFRO1lBQzNCLHdCQUFDLGNBQUQsWUFDRSx3QkFBQyxXQUFELENBQVk7Ozs7V0FDQTs7Ozs7Q0FDSzs7Ozs7QUFFekI7O0FBRUEsZUFBZSIsIm5hbWVzIjpbXSwic291cmNlcyI6WyJBcHAudHN4Il0sInZlcnNpb24iOjMsInNvdXJjZXNDb250ZW50IjpbImltcG9ydCB7IFF1ZXJ5Q2xpZW50LCBRdWVyeUNsaWVudFByb3ZpZGVyIH0gZnJvbSAnQHRhbnN0YWNrL3JlYWN0LXF1ZXJ5JztcbmltcG9ydCB7IEF1dGhQcm92aWRlciB9IGZyb20gJy4vY29udGV4dC9BdXRoQ29udGV4dCc7XG5pbXBvcnQgeyBBcHBSb3V0ZXIgfSBmcm9tICcuL3JvdXRlci9BcHBSb3V0ZXInO1xuXG4vLyBDcmVhdGUgYSBjbGllbnQgZm9yIFRhblN0YWNrIFF1ZXJ5XG5jb25zdCBxdWVyeUNsaWVudCA9IG5ldyBRdWVyeUNsaWVudCh7XG4gIGRlZmF1bHRPcHRpb25zOiB7XG4gICAgcXVlcmllczoge1xuICAgICAgcmVmZXRjaE9uV2luZG93Rm9jdXM6IGZhbHNlLFxuICAgICAgcmV0cnk6IDEsXG4gICAgfSxcbiAgfSxcbn0pO1xuXG5mdW5jdGlvbiBBcHAoKSB7XG4gIHJldHVybiAoXG4gICAgPFF1ZXJ5Q2xpZW50UHJvdmlkZXIgY2xpZW50PXtxdWVyeUNsaWVudH0+XG4gICAgICA8QXV0aFByb3ZpZGVyPlxuICAgICAgICA8QXBwUm91dGVyIC8+XG4gICAgICA8L0F1dGhQcm92aWRlcj5cbiAgICA8L1F1ZXJ5Q2xpZW50UHJvdmlkZXI+XG4gICk7XG59XG5cbmV4cG9ydCBkZWZhdWx0IEFwcDtcbiJdfQ==

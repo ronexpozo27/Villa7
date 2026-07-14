@@ -11,4 +11,8 @@
   <Folder Name="/Infrastructure/">
     <Project Path="Infrastructure/Villa7.Infrastructure.csproj" />
   </Folder>
+  <Folder Name="/Tests/">
+    <Project Path="../tests/unit/Villa7.UnitTests.csproj" />
+    <Project Path="../tests/integration/Villa7.IntegrationTests.csproj" />
+  </Folder>
 </Solution>

@@ -148,3 +148,5 @@ app.MapGet("/api/health", async (AppDbContext db) =>
 });
 
 app.Run();
+
+public partial class Program { }

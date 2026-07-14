@@ -1,0 +1,15 @@
+{
+  "name": "villa7-e2e-tests",
+  "version": "1.0.0",
+  "description": "End-to-End tests for Villa7 using Playwright",
+  "main": "index.js",
+  "scripts": {
+    "e2e": "playwright test",
+    "e2e:ui": "playwright test --ui",
+    "e2e:headed": "playwright test --headed",
+    "e2e:report": "playwright show-report"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.49.0"
+  }
+}

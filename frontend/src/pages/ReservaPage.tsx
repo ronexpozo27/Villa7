@@ -191,10 +191,11 @@ export const ReservaPage: React.FC = () => {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs text-gray-400 mb-1.5 uppercase tracking-wider">
+                <label htmlFor="fechaEntrada" className="block text-xs text-gray-400 mb-1.5 uppercase tracking-wider">
                   Check-in (Entrada)
                 </label>
                 <input
+                  id="fechaEntrada"
                   type="date"
                   min={todayStr}
                   required
@@ -204,10 +205,11 @@ export const ReservaPage: React.FC = () => {
                 />
               </div>
               <div>
-                <label className="block text-xs text-gray-400 mb-1.5 uppercase tracking-wider">
+                <label htmlFor="fechaSalida" className="block text-xs text-gray-400 mb-1.5 uppercase tracking-wider">
                   Check-out (Salida)
                 </label>
                 <input
+                  id="fechaSalida"
                   type="date"
                   min={fechaEntrada || todayStr}
                   required

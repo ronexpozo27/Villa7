@@ -1,0 +1,8 @@
+export const formatCurrency = (value) => {
+	return new Intl.NumberFormat("es-PE", {
+		style: "currency",
+		currency: "PEN"
+	}).format(value);
+};
+
+//# sourceMappingURL=data:application/json;base64,eyJtYXBwaW5ncyI6IkFBQUEsT0FBTyxNQUFNLGtCQUFrQixVQUEwQjtDQUN2RCxPQUFPLElBQUksS0FBSyxhQUFhLFNBQVM7RUFDcEMsT0FBTztFQUNQLFVBQVU7Q0FDWixDQUFDLENBQUMsQ0FBQyxPQUFPLEtBQUs7QUFDakIiLCJuYW1lcyI6W10sInNvdXJjZXMiOlsiZm9ybWF0LnRzIl0sInZlcnNpb24iOjMsInNvdXJjZXNDb250ZW50IjpbImV4cG9ydCBjb25zdCBmb3JtYXRDdXJyZW5jeSA9ICh2YWx1ZTogbnVtYmVyKTogc3RyaW5nID0+IHtcbiAgcmV0dXJuIG5ldyBJbnRsLk51bWJlckZvcm1hdCgnZXMtUEUnLCB7XG4gICAgc3R5bGU6ICdjdXJyZW5jeScsXG4gICAgY3VycmVuY3k6ICdQRU4nLFxuICB9KS5mb3JtYXQodmFsdWUpO1xufTtcbiJdfQ==
