@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useReservas } from '../../hooks/useReservas';
-import { Calendar, Check, X, ClipboardList } from 'lucide-react';
+import { Calendar, Check, X, ClipboardList, ShieldAlert } from 'lucide-react';
 import { formatCurrency } from '../../utils/format';
 
 export const ReservasAdminPage: React.FC = () => {

@@ -4,8 +4,19 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import type { Habitacion } from '../../types';
-import { ShieldAlert, Plus, Edit2, Check, X, Sliders, UploadCloud, Trash2, Image } from 'lucide-react';
+import {
+  Plus,
+  Edit2,
+  X,
+  Check,
+  Trash2,
+  UploadCloud,
+  Sliders,
+  ShieldAlert,
+  Image as ImageIcon
+} from "lucide-react";
 import { formatCurrency } from '../../utils/format';
+
 
 const roomSchema = z.object({
   nombre: z
@@ -502,7 +513,7 @@ export const HabitacionesAdminPage: React.FC = () => {
                           </>
                         ) : (
                           <div className="text-gray-500 flex flex-col items-center gap-1 text-xs">
-                            <Image className="w-6 h-6 opacity-40" />
+                            <ImageIcon className="w-6 h-6 opacity-40" />
                             <span>Sin imagen asignada</span>
                           </div>
                         )}

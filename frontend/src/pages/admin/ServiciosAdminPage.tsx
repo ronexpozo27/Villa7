@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import type { Servicio } from '../../types';
-import { ShieldAlert, Plus, Edit2, Check, X, Sparkles } from 'lucide-react';
+import { ShieldAlert, Plus, Edit2, X, Sparkles } from 'lucide-react';
 import { formatCurrency } from '../../utils/format';
 
 const serviceSchema = z.object({
