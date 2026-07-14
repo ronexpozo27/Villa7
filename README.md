@@ -130,7 +130,6 @@ Jwt__Issuer=
 Jwt__Audience=
 ```
 
-> **Importante:** No publicar credenciales reales en el repositorio.
 
 ---
 
@@ -196,7 +195,7 @@ En esta sección se incorporarán capturas de:
 
 # 📄 Licencia
 
-Este proyecto fue desarrollado con fines académicos como parte del trabajo de investigación para optar el grado de Bachiller en Ingeniería de Sistemas.
+Este proyecto fue desarrollado con fines académicos como parte del trabajo del curso PRUEBAS Y ASEGURAMIENTO DE CALIDAD DE SOFTWARE [IS - 489] con el obejetivo de desarrollar un app web con enfoque SDD y ademas hacer todas las pruebas de calidad.
 
 ---
 
