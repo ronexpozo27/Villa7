@@ -10,4 +10,6 @@ public interface IHabitacionService
     Task<HabitacionDto> CreateAsync(CrearHabitacionDto dto);
     Task UpdateAsync(Guid id, EditarHabitacionDto dto);
     Task ToggleStatusAsync(Guid id, bool activa);
+    Task<string> CambiarEstadoAsync(Guid id, bool activa, string? motivo, string adminEmail);
 }
+

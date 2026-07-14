@@ -21,7 +21,11 @@ public class ClienteService : IClienteService
             Id = c.Id,
             Nombre = c.Nombre,
             Correo = c.Correo,
-            FechaCreacion = c.FechaCreacion
+            FechaCreacion = c.FechaCreacion,
+            Activo = c.Activo,
+            FechaCambioEstado = c.FechaCambioEstado,
+            UsuarioCambioEstado = c.UsuarioCambioEstado,
+            MotivoCambioEstado = c.MotivoCambioEstado
         }).ToList();
     }
 
@@ -38,7 +42,28 @@ public class ClienteService : IClienteService
             Id = usuario.Id,
             Nombre = usuario.Nombre,
             Correo = usuario.Correo,
-            FechaCreacion = usuario.FechaCreacion
+            FechaCreacion = usuario.FechaCreacion,
+            Activo = usuario.Activo,
+            FechaCambioEstado = usuario.FechaCambioEstado,
+            UsuarioCambioEstado = usuario.UsuarioCambioEstado,
+            MotivoCambioEstado = usuario.MotivoCambioEstado
         };
+    }
+
+    public async Task<bool> CambiarEstadoAsync(Guid id, bool activo, string? motivo, string adminEmail)
+    {
+        var usuario = await _usuarioRepository.GetByIdAsync(id);
+        if (usuario == null || usuario.Rol != "Cliente")
+        {
+            throw new KeyNotFoundException("El cliente solicitado no existe.");
+        }
+
+        usuario.Activo = activo;
+        usuario.FechaCambioEstado = DateTime.UtcNow;
+        usuario.UsuarioCambioEstado = adminEmail;
+        usuario.MotivoCambioEstado = motivo;
+
+        await _usuarioRepository.UpdateAsync(usuario);
+        return true;
     }
 }

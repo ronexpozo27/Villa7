@@ -110,7 +110,41 @@ public class ServicioService : IServicioService
             Nombre = servicio.Nombre,
             Descripcion = servicio.Descripcion,
             Precio = servicio.Precio,
-            Activo = servicio.Activo
+            Activo = servicio.Activo,
+            FechaCambioEstado = servicio.FechaCambioEstado,
+            UsuarioCambioEstado = servicio.UsuarioCambioEstado,
+            MotivoCambioEstado = servicio.MotivoCambioEstado
         };
     }
+
+    public async Task<string> CambiarEstadoAsync(Guid id, bool activo, string? motivo, string adminEmail)
+    {
+        var servicio = await _servicioRepository.GetByIdAsync(id);
+        if (servicio == null)
+        {
+            throw new KeyNotFoundException("El servicio solicitado no existe.");
+        }
+
+        servicio.Activo = activo;
+        servicio.FechaCambioEstado = DateTime.UtcNow;
+        servicio.UsuarioCambioEstado = adminEmail;
+        servicio.MotivoCambioEstado = motivo;
+
+        await _servicioRepository.UpdateAsync(servicio);
+
+        if (!activo)
+        {
+            var hasBookings = await _servicioRepository.HasBookingsAsync(id);
+            if (hasBookings)
+            {
+                return "El servicio fue desactivado correctamente. Tenga en cuenta que está asociado a reservaciones existentes.";
+            }
+            return "El servicio fue desactivado correctamente.";
+        }
+        else
+        {
+            return "El servicio fue activado correctamente.";
+        }
+    }
 }
+

@@ -44,6 +44,10 @@ namespace Villa7.Infrastructure.Migrations
                         .HasColumnType("text")
                         .HasColumnName("descripcion");
 
+                    b.Property<DateTime?>("FechaCambioEstado")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("fecha_cambio_estado");
+
                     b.Property<string>("ImagenStoragePath")
                         .HasMaxLength(1000)
                         .HasColumnType("character varying(1000)")
@@ -53,6 +57,11 @@ namespace Villa7.Infrastructure.Migrations
                         .HasMaxLength(2048)
                         .HasColumnType("character varying(2048)")
                         .HasColumnName("imagen_url");
+
+                    b.Property<string>("MotivoCambioEstado")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("motivo_cambio_estado");
 
                     b.Property<string>("Nombre")
                         .IsRequired()
@@ -68,6 +77,11 @@ namespace Villa7.Infrastructure.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)")
                         .HasColumnName("ubicacion");
+
+                    b.Property<string>("UsuarioCambioEstado")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("usuario_cambio_estado");
 
                     b.HasKey("Id");
 
@@ -95,6 +109,10 @@ namespace Villa7.Infrastructure.Migrations
                         .HasColumnType("character varying(20)")
                         .HasColumnName("estado");
 
+                    b.Property<DateTime?>("FechaCambioEstado")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("fecha_cambio_estado");
+
                     b.Property<DateTime?>("FechaCancelacion")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("fecha_cancelacion");
@@ -117,9 +135,19 @@ namespace Villa7.Infrastructure.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("habitacion_id");
 
+                    b.Property<string>("MotivoCambioEstado")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("motivo_cambio_estado");
+
                     b.Property<decimal>("TotalCalculado")
                         .HasColumnType("decimal(10,2)")
                         .HasColumnName("total_calculado");
+
+                    b.Property<string>("UsuarioCambioEstado")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("usuario_cambio_estado");
 
                     b.Property<Guid>("UsuarioId")
                         .HasColumnType("uuid")
@@ -139,7 +167,7 @@ namespace Villa7.Infrastructure.Migrations
 
                     b.ToTable("reservas", null, t =>
                         {
-                            t.HasCheckConstraint("CK_reservas_estado", "estado IN ('Pendiente', 'Confirmada', 'Cancelada', 'Completada')");
+                            t.HasCheckConstraint("CK_reservas_estado", "estado IN ('Pendiente', 'Confirmada', 'Cancelada', 'Completada', 'Anulada')");
 
                             t.HasCheckConstraint("CK_reservas_fechas", "fecha_salida > fecha_entrada");
 
@@ -189,6 +217,15 @@ namespace Villa7.Infrastructure.Migrations
                         .HasColumnType("text")
                         .HasColumnName("descripcion");
 
+                    b.Property<DateTime?>("FechaCambioEstado")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("fecha_cambio_estado");
+
+                    b.Property<string>("MotivoCambioEstado")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("motivo_cambio_estado");
+
                     b.Property<string>("Nombre")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -198,6 +235,11 @@ namespace Villa7.Infrastructure.Migrations
                     b.Property<decimal>("Precio")
                         .HasColumnType("decimal(10,2)")
                         .HasColumnName("precio");
+
+                    b.Property<string>("UsuarioCambioEstado")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("usuario_cambio_estado");
 
                     b.HasKey("Id");
 
@@ -217,17 +259,32 @@ namespace Villa7.Infrastructure.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
+                    b.Property<bool>("Activo")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true)
+                        .HasColumnName("activo");
+
                     b.Property<string>("Correo")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)")
                         .HasColumnName("correo");
 
+                    b.Property<DateTime?>("FechaCambioEstado")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("fecha_cambio_estado");
+
                     b.Property<DateTime>("FechaCreacion")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("fecha_creacion")
                         .HasDefaultValueSql("NOW()");
+
+                    b.Property<string>("MotivoCambioEstado")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("motivo_cambio_estado");
 
                     b.Property<string>("Nombre")
                         .IsRequired()
@@ -255,6 +312,11 @@ namespace Villa7.Infrastructure.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)")
                         .HasColumnName("rol");
+
+                    b.Property<string>("UsuarioCambioEstado")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("usuario_cambio_estado");
 
                     b.HasKey("Id");
 

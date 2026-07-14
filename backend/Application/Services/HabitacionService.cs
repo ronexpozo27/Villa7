@@ -166,7 +166,41 @@ public class HabitacionService : IHabitacionService
             Activa = habitacion.Activa,
             ImagenUrl = habitacion.ImagenUrl,
             ImagenStoragePath = habitacion.ImagenStoragePath,
-            Ubicacion = habitacion.Ubicacion
+            Ubicacion = habitacion.Ubicacion,
+            FechaCambioEstado = habitacion.FechaCambioEstado,
+            UsuarioCambioEstado = habitacion.UsuarioCambioEstado,
+            MotivoCambioEstado = habitacion.MotivoCambioEstado
         };
     }
+
+    public async Task<string> CambiarEstadoAsync(Guid id, bool activa, string? motivo, string adminEmail)
+    {
+        var habitacion = await _habitacionRepository.GetByIdAsync(id);
+        if (habitacion == null)
+        {
+            throw new KeyNotFoundException("La habitación solicitada no existe.");
+        }
+
+        habitacion.Activa = activa;
+        habitacion.FechaCambioEstado = DateTime.UtcNow;
+        habitacion.UsuarioCambioEstado = adminEmail;
+        habitacion.MotivoCambioEstado = motivo;
+
+        await _habitacionRepository.UpdateAsync(habitacion);
+
+        if (!activa)
+        {
+            var hasFuture = await _habitacionRepository.HasFutureBookingsAsync(id);
+            if (hasFuture)
+            {
+                return "La habitación fue desactivada correctamente. Tenga en cuenta que tiene reservaciones activas o futuras asociadas.";
+            }
+            return "La habitación fue desactivada correctamente.";
+        }
+        else
+        {
+            return "La habitación fue activada correctamente.";
+        }
+    }
 }
+

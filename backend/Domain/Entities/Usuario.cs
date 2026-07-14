@@ -10,4 +10,9 @@ public class Usuario
     public DateTime FechaCreacion { get; set; } = DateTime.UtcNow;
     public string? RefreshToken { get; set; }
     public DateTime? RefreshTokenExpiracion { get; set; }
+    public bool Activo { get; set; } = true;
+    public DateTime? FechaCambioEstado { get; set; }
+    public string? UsuarioCambioEstado { get; set; }
+    public string? MotivoCambioEstado { get; set; }
 }
+

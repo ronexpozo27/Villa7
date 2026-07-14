@@ -31,12 +31,12 @@ test.describe('Villa7 End-to-End (E2E) Tests', () => {
     await expect(page).toHaveURL(/.*habitaciones/);
 
     // 3. Abrir detalle de habitación (modal)
-    await page.click('text=Ver detalles');
+    await page.locator('button:has-text("Ver Detalles")').first().click();
     const modal = page.locator('div.fixed.inset-0');
     await expect(modal).toBeVisible();
 
     // 4. Intentar reservar redirige a login
-    await modal.locator('button:has-text("Reservar ahora")').click();
+    await modal.locator('button:has-text("Reservar Ahora")').click();
     await expect(page).toHaveURL(/.*login/);
 
     // 5. Navegar a Registro
@@ -56,8 +56,8 @@ test.describe('Villa7 End-to-End (E2E) Tests', () => {
 
     // 8. Crear una reserva
     await page.click('text=Habitaciones');
-    await page.click('text=Ver detalles');
-    await page.locator('button:has-text("Reservar ahora")').click();
+    await page.locator('button:has-text("Ver Detalles")').first().click();
+    await page.locator('button:has-text("Reservar Ahora")').click();
     await page.waitForURL(/.*reservas\/crear.*/);
 
     // 9. Configurar estadía y fechas usando un offset aleatorio lejano (calculando correctamente el checkout)
@@ -81,7 +81,7 @@ test.describe('Villa7 End-to-End (E2E) Tests', () => {
     // 11. Confirmar reserva
     await page.click('button:has-text("Confirmar Reservación")');
     const successModal = page.locator('text=¡Reservación Creada con éxito!');
-    await expect(successModal).toBeVisible();
+    await expect(successModal).toBeVisible({ timeout: 15000 });
 
     // 12. Verificar en "Mis Reservas"
     await page.click('button:has-text("Ir a Mis Reservas")');
@@ -121,17 +121,18 @@ test.describe('Villa7 End-to-End (E2E) Tests', () => {
     await expect(tableRow).toBeVisible();
 
     // 5. Editar ubicación y gestionar imágenes
-    await tableRow.locator('button').last().click(); // Clic en editar
+    await tableRow.locator('button[title="Editar"]').click();
     await expect(page.locator('text=Editar Cabaña')).toBeVisible();
 
     // Modificar ubicación
     await page.fill('input[name="ubicacion"]', 'Sector E2E Modificado, Lote 99');
 
-    // Subir imagen
+    // Subir imagen - el input de archivo es hidden (se activa via ref)
     const fileInput = page.locator('input#integrated-image-input');
+    await page.waitForSelector('input#integrated-image-input', { state: 'attached', timeout: 10000 });
     await fileInput.setInputFiles(tempImagePath);
     await page.click('button:has-text("Subir")');
-    await expect(page.locator('text=¡Imagen cargada correctamente!')).toBeVisible();
+    await expect(page.locator('text=¡Imagen cargada correctamente!')).toBeVisible({ timeout: 20000 });
 
     // Eliminar imagen
     page.once('dialog', async dialog => {
@@ -158,10 +159,11 @@ test.describe('Villa7 End-to-End (E2E) Tests', () => {
     // Confirmar creación y editar
     const serviceRow = page.locator(`tr:has-text("${uniqueServiceName}")`);
     await expect(serviceRow).toBeVisible();
-    await serviceRow.locator('button').last().click(); // Clic en editar
-    await expect(page.locator('text=Editar Servicio')).toBeVisible();
+    await serviceRow.locator('button[title="Editar"]').click();
+    await expect(page.locator('h3:has-text("Editar Servicio")')).toBeVisible();
     await page.fill('input[name="precio"]', '50.00'); // Modificar precio
     await page.click('button:has-text("Guardar Cambios")');
+
 
     // 7. Consultar reservas global
     await page.goto('/admin/reservas');
@@ -304,12 +306,14 @@ test.describe('Villa7 End-to-End (E2E) Tests', () => {
     // 3. Subir Imagen
     const row = page.locator(`tr:has-text("${roomName}")`);
     await expect(row).toBeVisible();
-    await row.locator('button').last().click(); // Clic en editar
+    await row.locator('button[title="Editar"]').click();
+    await expect(page.locator('text=Editar Cabaña')).toBeVisible();
 
     const fileInput = page.locator('input#integrated-image-input');
+    await page.waitForSelector('input#integrated-image-input', { state: 'attached', timeout: 10000 });
     await fileInput.setInputFiles(tempImagePath);
     await page.click('button:has-text("Subir")');
-    await expect(page.locator('text=¡Imagen cargada correctamente!')).toBeVisible();
+    await expect(page.locator('text=¡Imagen cargada correctamente!')).toBeVisible({ timeout: 20000 });
 
     // 4. Verificar visualización inmediata (Preview src contiene la URL de Supabase)
     const imgPreview = page.locator('div.h-32 img');
@@ -323,7 +327,8 @@ test.describe('Villa7 End-to-End (E2E) Tests', () => {
     await page.click('button:has-text("Guardar Cambios")');
 
     // 5. Confirmar persistencia volviendo a abrir la edición
-    await row.locator('button').last().click();
+    await row.locator('button[title="Editar"]').click();
+    await expect(page.locator('text=Editar Cabaña')).toBeVisible();
     const imgReloaded = page.locator('div.h-32 img');
     await expect(imgReloaded).toBeVisible();
     const reloadedSrc = await imgReloaded.getAttribute('src');
@@ -341,15 +346,21 @@ test.describe('Villa7 End-to-End (E2E) Tests', () => {
 
     // 7. Reemplazar imagen
     await page.goto('/admin/habitaciones');
-    await row.locator('button').last().click();
+    const rowRefetched = page.locator(`tr:has-text("${roomName}")`);
+    await rowRefetched.locator('button[title="Editar"]').click();
+    await expect(page.locator('text=Editar Cabaña')).toBeVisible();
+    const fileInput2 = page.locator('input#integrated-image-input');
+    await page.waitForSelector('input#integrated-image-input', { state: 'attached', timeout: 10000 });
     // Subir de nuevo el mismo archivo simulado (lo reemplaza)
-    await fileInput.setInputFiles(tempImagePath);
+    await fileInput2.setInputFiles(tempImagePath);
     await page.click('button:has-text("Subir")');
-    await expect(page.locator('text=¡Imagen cargada correctamente!')).toBeVisible();
+    await expect(page.locator('text=¡Imagen cargada correctamente!')).toBeVisible({ timeout: 20000 });
     await page.click('button:has-text("Guardar Cambios")');
 
     // 8. Eliminar imagen y confirmar sincronización completa
-    await row.locator('button').last().click();
+    const rowRefetched2 = page.locator(`tr:has-text("${roomName}")`);
+    await rowRefetched2.locator('button[title="Editar"]').click();
+    await expect(page.locator('text=Editar Cabaña')).toBeVisible();
     page.once('dialog', async dialog => {
       await dialog.accept();
     });

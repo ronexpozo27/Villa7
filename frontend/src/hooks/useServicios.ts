@@ -39,13 +39,14 @@ export const useServicios = () => {
 
   // Mutation to toggle service status
   const toggleStatusMutation = useMutation({
-    mutationFn: ({ id, activo }: { id: string; activo: boolean }) =>
-      serviciosApi.toggleStatus(id, activo),
+    mutationFn: ({ id, activo, motivo }: { id: string; activo: boolean; motivo?: string }) =>
+      serviciosApi.toggleStatus(id, { activo, motivo }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['servicios'] });
       queryClient.invalidateQueries({ queryKey: ['admin-servicios'] });
     },
   });
+
 
   return {
     services: servicesQuery.data || [],

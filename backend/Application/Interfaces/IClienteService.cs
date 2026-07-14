@@ -6,4 +6,6 @@ public interface IClienteService
 {
     Task<List<ClienteDto>> ListClientesAsync();
     Task<ClienteDto?> GetByIdAsync(Guid id);
+    Task<bool> CambiarEstadoAsync(Guid id, bool activo, string? motivo, string adminEmail);
 }
+

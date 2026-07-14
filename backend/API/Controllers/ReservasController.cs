@@ -169,4 +169,73 @@ public class ReservasController : ControllerBase
             return StatusCode(500, new { message = "Ocurrió un error al cancelar tu reserva.", details = ex.Message });
         }
     }
+
+    [HttpPost("{id}/anular")]
+    [Authorize(Roles = "Administrador")]
+    public async Task<IActionResult> Anular(Guid id, [FromBody] AnularReservaDto dto)
+    {
+        try
+        {
+            var adminEmail = User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value 
+                             ?? User.FindFirst("email")?.Value 
+                             ?? "admin@villa7.com";
+
+            await _reservaService.AnularAsync(id, dto.Motivo, adminEmail);
+            return Ok(new { success = true, action = "annulled", message = "La reserva fue anulada correctamente." });
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { status = 404, message = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { status = 400, message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { message = "Ocurrió un error al anular la reserva.", details = ex.Message });
+        }
+    }
+
+    [HttpPost("{id}/cancelar")]
+    public async Task<IActionResult> CancelWithMotivo(Guid id, [FromBody] AnularReservaDto dto)
+    {
+        try
+        {
+            var userRole = User.FindFirst(ClaimTypes.Role)?.Value ?? User.FindFirst("role")?.Value;
+            var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? User.FindFirst("sub")?.Value;
+            var userEmail = User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value 
+                            ?? User.FindFirst("email")?.Value 
+                            ?? "user@villa7.com";
+
+            Guid usuarioId = Guid.Empty;
+            if (userRole != "Administrador")
+            {
+                if (string.IsNullOrEmpty(userIdStr) || !Guid.TryParse(userIdStr, out usuarioId))
+                {
+                    return Unauthorized(new { status = 401, message = "Identificación de usuario inválida." });
+                }
+            }
+
+            await _reservaService.CancelWithMotivoAsync(id, usuarioId, dto.Motivo, userEmail);
+            return Ok(new { success = true, action = "cancelled", message = "La reserva fue cancelada correctamente." });
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { status = 404, message = ex.Message });
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Forbid();
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { status = 400, message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { message = "Ocurrió un error al cancelar la reserva.", details = ex.Message });
+        }
+    }
 }
+

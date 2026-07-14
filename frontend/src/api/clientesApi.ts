@@ -11,4 +11,10 @@ export const clientesApi = {
     const response = await axiosClient.get<Usuario>(`/clientes/${id}`);
     return response.data;
   },
+
+  toggleStatus: async (id: string, payload: { activo: boolean; motivo?: string }): Promise<any> => {
+    const response = await axiosClient.patch<any>(`/clientes/${id}/estado`, payload);
+    return response.data;
+  },
 };
+

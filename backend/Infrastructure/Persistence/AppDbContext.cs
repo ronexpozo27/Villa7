@@ -32,6 +32,10 @@ public class AppDbContext : DbContext
             entity.Property(e => e.FechaCreacion).HasColumnName("fecha_creacion").HasDefaultValueSql("NOW()").IsRequired();
             entity.Property(e => e.RefreshToken).HasColumnName("refresh_token").HasMaxLength(255);
             entity.Property(e => e.RefreshTokenExpiracion).HasColumnName("refresh_token_expiracion");
+            entity.Property(e => e.Activo).HasColumnName("activo").HasDefaultValue(true).IsRequired();
+            entity.Property(e => e.FechaCambioEstado).HasColumnName("fecha_cambio_estado");
+            entity.Property(e => e.UsuarioCambioEstado).HasColumnName("usuario_cambio_estado").HasMaxLength(255);
+            entity.Property(e => e.MotivoCambioEstado).HasColumnName("motivo_cambio_estado").HasMaxLength(1000);
 
             entity.HasIndex(e => e.Correo).IsUnique();
         });
@@ -54,6 +58,9 @@ public class AppDbContext : DbContext
             entity.Property(e => e.ImagenUrl).HasColumnName("imagen_url").HasMaxLength(2048);
             entity.Property(e => e.ImagenStoragePath).HasColumnName("imagen_storage_path").HasMaxLength(1000);
             entity.Property(e => e.Ubicacion).HasColumnName("ubicacion").HasMaxLength(500);
+            entity.Property(e => e.FechaCambioEstado).HasColumnName("fecha_cambio_estado");
+            entity.Property(e => e.UsuarioCambioEstado).HasColumnName("usuario_cambio_estado").HasMaxLength(255);
+            entity.Property(e => e.MotivoCambioEstado).HasColumnName("motivo_cambio_estado").HasMaxLength(1000);
 
             entity.HasIndex(e => e.Nombre).IsUnique();
         });
@@ -68,6 +75,9 @@ public class AppDbContext : DbContext
             entity.Property(e => e.Descripcion).HasColumnName("descripcion");
             entity.Property(e => e.Precio).HasColumnName("precio").HasColumnType("decimal(10,2)").IsRequired();
             entity.Property(e => e.Activo).HasColumnName("activo").HasDefaultValue(true).IsRequired();
+            entity.Property(e => e.FechaCambioEstado).HasColumnName("fecha_cambio_estado");
+            entity.Property(e => e.UsuarioCambioEstado).HasColumnName("usuario_cambio_estado").HasMaxLength(255);
+            entity.Property(e => e.MotivoCambioEstado).HasColumnName("motivo_cambio_estado").HasMaxLength(1000);
 
             entity.HasIndex(e => e.Nombre).IsUnique();
         });
@@ -77,7 +87,7 @@ public class AppDbContext : DbContext
         {
             entity.ToTable("reservas", t =>
             {
-                t.HasCheckConstraint("CK_reservas_estado", "estado IN ('Pendiente', 'Confirmada', 'Cancelada', 'Completada')");
+                t.HasCheckConstraint("CK_reservas_estado", "estado IN ('Pendiente', 'Confirmada', 'Cancelada', 'Completada', 'Anulada')");
                 t.HasCheckConstraint("CK_reservas_fechas", "fecha_salida > fecha_entrada");
                 t.HasCheckConstraint("CK_reservas_total_calculado", "total_calculado >= 0");
             });
@@ -91,6 +101,9 @@ public class AppDbContext : DbContext
             entity.Property(e => e.TotalCalculado).HasColumnName("total_calculado").HasColumnType("decimal(10,2)").IsRequired();
             entity.Property(e => e.FechaCreacion).HasColumnName("fecha_creacion").HasDefaultValueSql("NOW()").IsRequired();
             entity.Property(e => e.FechaCancelacion).HasColumnName("fecha_cancelacion");
+            entity.Property(e => e.FechaCambioEstado).HasColumnName("fecha_cambio_estado");
+            entity.Property(e => e.UsuarioCambioEstado).HasColumnName("usuario_cambio_estado").HasMaxLength(255);
+            entity.Property(e => e.MotivoCambioEstado).HasColumnName("motivo_cambio_estado").HasMaxLength(1000);
 
             // Relaciones
             entity.HasOne(d => d.Usuario)

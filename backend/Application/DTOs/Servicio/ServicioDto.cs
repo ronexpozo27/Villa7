@@ -7,4 +7,8 @@ public class ServicioDto
     public string Descripcion { get; set; } = string.Empty;
     public decimal Precio { get; set; }
     public bool Activo { get; set; }
+    public DateTime? FechaCambioEstado { get; set; }
+    public string? UsuarioCambioEstado { get; set; }
+    public string? MotivoCambioEstado { get; set; }
 }
+

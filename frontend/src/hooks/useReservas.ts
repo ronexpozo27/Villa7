@@ -48,6 +48,28 @@ export const useReservas = (adminEstadoFilter?: string) => {
     },
   });
 
+  // Mutation to annul booking (admin)
+  const anularMutation = useMutation({
+    mutationFn: ({ id, motivo }: { id: string; motivo: string }) =>
+      reservasApi.anular(id, motivo),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['mis-reservas'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-reservas'] });
+      queryClient.invalidateQueries({ queryKey: ['habitaciones'] });
+    },
+  });
+
+  // Mutation to cancel booking with motive
+  const cancelWithMotivoMutation = useMutation({
+    mutationFn: ({ id, motivo }: { id: string; motivo: string }) =>
+      reservasApi.cancelarWithMotivo(id, motivo),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['mis-reservas'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-reservas'] });
+      queryClient.invalidateQueries({ queryKey: ['habitaciones'] });
+    },
+  });
+
   return {
     misReservas: misReservasQuery.data || [],
     isMisLoading: misReservasQuery.isLoading,
@@ -66,8 +88,15 @@ export const useReservas = (adminEstadoFilter?: string) => {
 
     cambiarEstadoReserva: changeStatusMutation.mutateAsync,
     isCambiandoEstado: changeStatusMutation.isPending,
+
+    anularReserva: anularMutation.mutateAsync,
+    isAnulando: anularMutation.isPending,
+
+    cancelarReservaConMotivo: cancelWithMotivoMutation.mutateAsync,
+    isCancelandoConMotivo: cancelWithMotivoMutation.isPending,
   };
 };
+
 
 export const useReservaDetails = (id: string) => {
   return useQuery({

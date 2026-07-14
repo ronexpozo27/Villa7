@@ -22,7 +22,9 @@ export const serviciosApi = {
     return response.data;
   },
 
-  toggleStatus: async (id: string, activo: boolean): Promise<void> => {
-    await axiosClient.patch(`/servicios/${id}/estado`, activo);
+  toggleStatus: async (id: string, payload: boolean | { activo: boolean; motivo?: string }): Promise<any> => {
+    const response = await axiosClient.patch<any>(`/servicios/${id}/estado`, payload);
+    return response.data;
   },
+
 };

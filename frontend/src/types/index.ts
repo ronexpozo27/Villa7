@@ -8,6 +8,10 @@ export interface Usuario {
   correo: string;
   rol: RolUsuario;
   fechaCreacion: string;
+  activo?: boolean;
+  fechaCambioEstado?: string | null;
+  usuarioCambioEstado?: string | null;
+  motivoCambioEstado?: string | null;
 }
 
 export interface AuthResponse {
@@ -30,6 +34,9 @@ export interface Habitacion {
   imagenUrl?: string | null;
   imagenStoragePath?: string | null;
   ubicacion?: string | null;
+  fechaCambioEstado?: string | null;
+  usuarioCambioEstado?: string | null;
+  motivoCambioEstado?: string | null;
 }
 
 export interface Servicio {
@@ -38,6 +45,9 @@ export interface Servicio {
   descripcion: string;
   precio: number;
   activo: boolean;
+  fechaCambioEstado?: string | null;
+  usuarioCambioEstado?: string | null;
+  motivoCambioEstado?: string | null;
 }
 
 export interface ReservaServicioInfo {
@@ -54,9 +64,13 @@ export interface Reserva {
   habitacionNombre: string;
   fechaEntrada: string;
   fechaSalida: string;
-  estado: 'Pendiente' | 'Confirmada' | 'Cancelada' | 'Completada';
+  estado: 'Pendiente' | 'Confirmada' | 'Cancelada' | 'Completada' | 'Anulada';
   totalCalculado: number;
   fechaCreacion: string;
   fechaCancelacion: string | null;
   serviciosContratados: ReservaServicioInfo[];
+  fechaCambioEstado?: string | null;
+  usuarioCambioEstado?: string | null;
+  motivoCambioEstado?: string | null;
 }
+

@@ -82,12 +82,15 @@ test.describe('Villa7 UI Tests', () => {
   test('3. Rooms catalog display, prices, and room details modal', async ({ page }) => {
     await page.goto('/habitaciones');
     
-    // Verify prices display in Soles (S/) format
-    const priceText = page.locator('text=S/').first();
+    // Wait for rooms to load (grid must appear)
+    await page.waitForSelector('.grid', { timeout: 10000 });
+    
+    // Verify prices display in Soles (S/) format — Intl.NumberFormat('es-PE') produces "S/ 120.00"
+    const priceText = page.locator('[class*="text-gray"]', { hasText: /S\/\s/ }).first();
     await expect(priceText).toBeVisible();
 
-    // Open detail modal
-    await page.click('text=Ver detalles');
+    // Open detail modal (button text rendered as 'Ver Detalles')
+    await page.locator('button:has-text("Ver Detalles")').first().click();
     
     // Verify details inside modal
     const modal = page.locator('div.fixed.inset-0');
@@ -131,8 +134,9 @@ test.describe('Villa7 UI Tests', () => {
     await expect(tableRow).toBeVisible();
 
     // Edit Room and Image Upload / Deletion
-    await tableRow.locator('button').last().click();
+    await tableRow.locator('button[title="Editar"]').click();
     await expect(page.locator('text=Editar Cabaña')).toBeVisible();
+
 
     // Upload image
     const tempFilePath = path.join(__dirname, 'temp-ui-image.png');
@@ -171,7 +175,8 @@ test.describe('Villa7 UI Tests', () => {
 
     await page.click('text=Clientes');
     await expect(page).toHaveURL(/.*admin\/clientes/);
-    await expect(page.locator('text=Clientes Registrados')).toBeVisible();
+    await expect(page.locator('h2:has-text("Clientes Registrados")')).toBeVisible();
   });
+
 
 });

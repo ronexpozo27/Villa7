@@ -11,4 +11,8 @@ public class HabitacionDto
     public string? ImagenUrl { get; set; }
     public string? ImagenStoragePath { get; set; }
     public string? Ubicacion { get; set; }
+    public DateTime? FechaCambioEstado { get; set; }
+    public string? UsuarioCambioEstado { get; set; }
+    public string? MotivoCambioEstado { get; set; }
 }
+

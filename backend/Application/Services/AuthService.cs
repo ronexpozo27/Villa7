@@ -96,6 +96,11 @@ public class AuthService : IAuthService
             throw new UnauthorizedAccessException("Credenciales inválidas.");
         }
 
+        if (!usuario.Activo)
+        {
+            throw new UnauthorizedAccessException("Su cuenta se encuentra inactiva. Comuníquese con el administrador.");
+        }
+
         // 2. Verificar hash de contraseña
         var isValid = _passwordHasher.Verify(dto.Password, usuario.PasswordHash);
         if (!isValid)
@@ -124,7 +129,7 @@ public class AuthService : IAuthService
 
         // 1. Obtener usuario por refresh token
         var usuario = await _usuarioRepository.GetByRefreshTokenAsync(dto.RefreshToken);
-        if (usuario == null || usuario.RefreshTokenExpiracion < DateTime.UtcNow)
+        if (usuario == null || !usuario.Activo || usuario.RefreshTokenExpiracion < DateTime.UtcNow)
         {
             throw new UnauthorizedAccessException("Sesión expirada o Refresh Token inválido.");
         }

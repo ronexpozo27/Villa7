@@ -10,4 +10,6 @@ public interface IServicioService
     Task<ServicioDto> CreateAsync(CrearServicioDto dto);
     Task UpdateAsync(Guid id, EditarServicioDto dto);
     Task ToggleStatusAsync(Guid id, bool activo);
+    Task<string> CambiarEstadoAsync(Guid id, bool activo, string? motivo, string adminEmail);
 }
+

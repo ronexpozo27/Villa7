@@ -39,13 +39,14 @@ export const useHabitaciones = (fechaEntrada?: string, fechaSalida?: string) => 
 
   // Mutation to toggle room status
   const toggleStatusMutation = useMutation({
-    mutationFn: ({ id, activa }: { id: string; activa: boolean }) =>
-      habitacionesApi.toggleStatus(id, activa),
+    mutationFn: ({ id, activa, motivo }: { id: string; activa: boolean; motivo?: string }) =>
+      habitacionesApi.toggleStatus(id, { activo: activa, motivo }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['habitaciones'] });
       queryClient.invalidateQueries({ queryKey: ['admin-habitaciones'] });
     },
   });
+
 
   // Mutation to upload image
   const uploadImageMutation = useMutation({

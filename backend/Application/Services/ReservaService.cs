@@ -173,28 +173,87 @@ public class ReservaService : IReservaService
         // Validar transiciones permitidas
         if (estadoActual == "Pendiente")
         {
-            if (estadoDestino != "Confirmada" && estadoDestino != "Cancelada")
+            if (estadoDestino != "Confirmada" && estadoDestino != "Cancelada" && estadoDestino != "Anulada")
             {
-                throw new InvalidOperationException("Una reserva 'Pendiente' solo puede transicionar a 'Confirmada' o 'Cancelada'.");
+                throw new InvalidOperationException("Una reserva 'Pendiente' solo puede transicionar a 'Confirmada', 'Cancelada' o 'Anulada'.");
             }
         }
         else if (estadoActual == "Confirmada")
         {
-            if (estadoDestino != "Completada" && estadoDestino != "Cancelada")
+            if (estadoDestino != "Completada" && estadoDestino != "Cancelada" && estadoDestino != "Anulada")
             {
-                throw new InvalidOperationException("Una reserva 'Confirmada' solo puede transicionar a 'Completada' o 'Cancelada'.");
+                throw new InvalidOperationException("Una reserva 'Confirmada' solo puede transicionar a 'Completada', 'Cancelada' o 'Anulada'.");
             }
         }
-        else if (estadoActual == "Cancelada" || estadoActual == "Completada")
+        else if (estadoActual == "Cancelada" || estadoActual == "Completada" || estadoActual == "Anulada")
         {
             throw new InvalidOperationException($"No se permiten cambios de estado en reservas finalizadas ('{estadoActual}').");
         }
 
         reserva.Estado = estadoDestino;
-        if (estadoDestino == "Cancelada")
+        if (estadoDestino == "Cancelada" || estadoDestino == "Anulada")
         {
             reserva.FechaCancelacion = DateTime.UtcNow;
         }
+
+        await _reservaRepository.UpdateAsync(reserva);
+    }
+
+    public async Task CancelWithMotivoAsync(Guid id, Guid usuarioId, string? motivo, string executorEmail)
+    {
+        var reserva = await _reservaRepository.GetByIdAsync(id);
+        if (reserva == null)
+        {
+            throw new KeyNotFoundException("La reserva solicitada no existe.");
+        }
+
+        if (usuarioId != Guid.Empty && reserva.UsuarioId != usuarioId)
+        {
+            throw new UnauthorizedAccessException("No posees los permisos necesarios para cancelar esta reserva.");
+        }
+
+        if (usuarioId != Guid.Empty)
+        {
+            if (reserva.Estado != "Pendiente")
+            {
+                throw new InvalidOperationException("El cliente solo puede cancelar una reserva en estado 'Pendiente'.");
+            }
+        }
+        else
+        {
+            if (reserva.Estado != "Pendiente" && reserva.Estado != "Confirmada")
+            {
+                throw new InvalidOperationException("Solo se pueden cancelar reservas en estado 'Pendiente' o 'Confirmada'.");
+            }
+        }
+
+        reserva.Estado = "Cancelada";
+        reserva.FechaCancelacion = DateTime.UtcNow;
+        reserva.FechaCambioEstado = DateTime.UtcNow;
+        reserva.UsuarioCambioEstado = executorEmail;
+        reserva.MotivoCambioEstado = motivo;
+
+        await _reservaRepository.UpdateAsync(reserva);
+    }
+
+    public async Task AnularAsync(Guid id, string motivo, string executorEmail)
+    {
+        var reserva = await _reservaRepository.GetByIdAsync(id);
+        if (reserva == null)
+        {
+            throw new KeyNotFoundException("La reserva solicitada no existe.");
+        }
+
+        if (reserva.Estado != "Pendiente" && reserva.Estado != "Confirmada")
+        {
+            throw new InvalidOperationException("Solo se pueden anular reservas en estado 'Pendiente' o 'Confirmada'.");
+        }
+
+        reserva.Estado = "Anulada";
+        reserva.FechaCancelacion = DateTime.UtcNow;
+        reserva.FechaCambioEstado = DateTime.UtcNow;
+        reserva.UsuarioCambioEstado = executorEmail;
+        reserva.MotivoCambioEstado = motivo;
 
         await _reservaRepository.UpdateAsync(reserva);
     }
@@ -214,6 +273,9 @@ public class ReservaService : IReservaService
             TotalCalculado = reserva.TotalCalculado,
             FechaCreacion = reserva.FechaCreacion,
             FechaCancelacion = reserva.FechaCancelacion,
+            FechaCambioEstado = reserva.FechaCambioEstado,
+            UsuarioCambioEstado = reserva.UsuarioCambioEstado,
+            MotivoCambioEstado = reserva.MotivoCambioEstado,
             ServiciosContratados = reserva.ReservaServicios.Select(rs => new ReservaServicioDto
             {
                 ServicioId = rs.ServicioId,
@@ -223,3 +285,4 @@ public class ReservaService : IReservaService
         };
     }
 }
+

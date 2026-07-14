@@ -13,9 +13,13 @@ public class ReservaDto
     public decimal TotalCalculado { get; set; }
     public DateTime FechaCreacion { get; set; }
     public DateTime? FechaCancelacion { get; set; }
+    public DateTime? FechaCambioEstado { get; set; }
+    public string? UsuarioCambioEstado { get; set; }
+    public string? MotivoCambioEstado { get; set; }
     
     public List<ReservaServicioDto> ServiciosContratados { get; set; } = new();
 }
+
 
 public class ReservaServicioDto
 {

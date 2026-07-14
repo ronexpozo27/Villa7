@@ -123,12 +123,38 @@ public class HabitacionesController : ControllerBase
 
     [HttpPatch("{id}/estado")]
     [Authorize(Roles = "Administrador")]
-    public async Task<IActionResult> ToggleStatus(Guid id, [FromBody] bool activa)
+    public async Task<IActionResult> ToggleStatus(Guid id, [FromBody] System.Text.Json.JsonElement payload)
     {
         try
         {
-            await _habitacionService.ToggleStatusAsync(id, activa);
-            return NoContent();
+            var adminEmail = User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value 
+                             ?? User.FindFirst("email")?.Value 
+                             ?? "admin@villa7.com";
+
+            bool activa = true;
+            string? motivo = null;
+
+            if (payload.ValueKind == System.Text.Json.JsonValueKind.True || payload.ValueKind == System.Text.Json.JsonValueKind.False)
+            {
+                activa = payload.GetBoolean();
+                await _habitacionService.ToggleStatusAsync(id, activa);
+                return NoContent();
+            }
+            else
+            {
+                var dto = System.Text.Json.JsonSerializer.Deserialize<Villa7.Application.DTOs.Common.CambiarEstadoDto>(payload.GetRawText(), new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                if (dto != null)
+                {
+                    activa = dto.Activo;
+                    motivo = dto.Motivo;
+                }
+                var message = await _habitacionService.CambiarEstadoAsync(id, activa, motivo, adminEmail);
+                return Ok(new { 
+                    success = true, 
+                    action = activa ? "activated" : "deactivated", 
+                    message = message 
+                });
+            }
         }
         catch (KeyNotFoundException ex)
         {
@@ -143,6 +169,7 @@ public class HabitacionesController : ControllerBase
             return StatusCode(500, new { message = "Ocurrió un error al cambiar el estado de la habitación.", details = ex.Message });
         }
     }
+
 
     [HttpPost("{id}/imagen")]
     [Authorize(Roles = "Administrador")]

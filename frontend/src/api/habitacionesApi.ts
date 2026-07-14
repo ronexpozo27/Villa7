@@ -26,9 +26,11 @@ export const habitacionesApi = {
     return response.data;
   },
 
-  toggleStatus: async (id: string, activa: boolean): Promise<void> => {
-    await axiosClient.patch(`/habitaciones/${id}/estado`, activa);
+  toggleStatus: async (id: string, payload: boolean | { activo: boolean; motivo?: string }): Promise<any> => {
+    const response = await axiosClient.patch<any>(`/habitaciones/${id}/estado`, payload);
+    return response.data;
   },
+
 
   getAdminList: async (): Promise<Habitacion[]> => {
     const response = await axiosClient.get<Habitacion[]>('/habitaciones/admin-list');

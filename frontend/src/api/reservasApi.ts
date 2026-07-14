@@ -39,4 +39,15 @@ export const reservasApi = {
   changeStatus: async (id: string, nuevoEstado: string): Promise<void> => {
     await axiosClient.patch(`/reservas/${id}/estado`, { nuevoEstado });
   },
+
+  anular: async (id: string, motivo: string): Promise<any> => {
+    const response = await axiosClient.post<any>(`/reservas/${id}/anular`, { motivo });
+    return response.data;
+  },
+
+  cancelarWithMotivo: async (id: string, motivo: string): Promise<any> => {
+    const response = await axiosClient.post<any>(`/reservas/${id}/cancelar`, { motivo });
+    return response.data;
+  },
 };
+

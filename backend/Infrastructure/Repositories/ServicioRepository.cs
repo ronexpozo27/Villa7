@@ -63,4 +63,11 @@ public class ServicioRepository : IServicioRepository
         return await _context.Servicios
             .AnyAsync(s => s.Nombre.ToLower() == nombre.ToLower().Trim());
     }
+
+    public async Task<bool> HasBookingsAsync(Guid servicioId)
+    {
+        return await _context.ReservaServicios
+            .AnyAsync(rs => rs.ServicioId == servicioId);
+    }
 }
+

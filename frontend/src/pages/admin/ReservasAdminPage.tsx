@@ -10,11 +10,29 @@ export const ReservasAdminPage: React.FC = () => {
     isAdminLoading,
     fetchAdminReservas,
     cambiarEstadoReserva,
+    anularReserva,
+    cancelarReservaConMotivo,
   } = useReservas(estadoFilter === '' ? undefined : estadoFilter);
+
+  // Confirmar cancelar o anular
+  const [confirmingReserva, setConfirmingReserva] = useState<{ id: string; action: 'Cancelar' | 'Anular' } | null>(null);
+  const [statusMotive, setStatusMotive] = useState('');
+
+  // Toast notifications
+  const [isToastOpen, setIsToastOpen] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+  const [toastType, setToastType] = useState<'success' | 'error'>('success');
 
   useEffect(() => {
     fetchAdminReservas();
   }, [estadoFilter]);
+
+  useEffect(() => {
+    if (isToastOpen) {
+      const timer = setTimeout(() => setIsToastOpen(false), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [isToastOpen]);
 
   const handleStatusTransition = async (id: string, nuevoEstado: string) => {
     try {
@@ -22,6 +40,33 @@ export const ReservasAdminPage: React.FC = () => {
       fetchAdminReservas();
     } catch (e: any) {
       alert(e.message || 'No se pudo realizar el cambio de estado de la reserva.');
+    }
+  };
+
+  const handleOpenConfirmStatus = (id: string, action: 'Cancelar' | 'Anular') => {
+    setConfirmingReserva({ id, action });
+    setStatusMotive('');
+  };
+
+  const handleToggleStatus = async () => {
+    if (!confirmingReserva) return;
+    try {
+      if (confirmingReserva.action === 'Anular') {
+        const res = await anularReserva({ id: confirmingReserva.id, motivo: statusMotive });
+        setToastType('success');
+        setToastMessage(res?.message || 'Reserva anulada correctamente.');
+      } else {
+        const res = await cancelarReservaConMotivo({ id: confirmingReserva.id, motivo: statusMotive });
+        setToastType('success');
+        setToastMessage(res?.message || 'Reserva cancelada correctamente.');
+      }
+      setIsToastOpen(true);
+      setConfirmingReserva(null);
+      fetchAdminReservas();
+    } catch (e: any) {
+      setToastType('error');
+      setToastMessage(e.message || 'No se pudo procesar la solicitud.');
+      setIsToastOpen(true);
     }
   };
 
@@ -44,10 +89,13 @@ export const ReservasAdminPage: React.FC = () => {
         return <span className="px-2.5 py-0.5 text-xs font-semibold rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20">Completada</span>;
       case 'Cancelada':
         return <span className="px-2.5 py-0.5 text-xs font-semibold rounded-full bg-red-500/10 text-red-400 border border-red-500/20">Cancelada</span>;
+      case 'Anulada':
+        return <span className="px-2.5 py-0.5 text-xs font-semibold rounded-full bg-purple-500/10 text-purple-400 border border-purple-500/20">Anulada</span>;
       default:
         return null;
     }
   };
+
 
   return (
     <div className="space-y-6">
@@ -70,9 +118,11 @@ export const ReservasAdminPage: React.FC = () => {
             <option value="Confirmada">Confirmada</option>
             <option value="Completada">Completada</option>
             <option value="Cancelada">Cancelada</option>
+            <option value="Anulada">Anulada</option>
           </select>
         </div>
       </div>
+
 
       {/* Grid List */}
       {isAdminLoading ? (
@@ -126,12 +176,20 @@ export const ReservasAdminPage: React.FC = () => {
                               <span>Confirmar</span>
                             </button>
                             <button
-                              onClick={() => handleStatusTransition(reserva.id, 'Cancelada')}
+                              onClick={() => handleOpenConfirmStatus(reserva.id, 'Cancelar')}
                               className="px-2.5 py-1.5 bg-red-950/45 hover:bg-red-500 border border-red-500/20 text-red-400 hover:text-white text-xs font-semibold rounded-lg transition-all cursor-pointer flex items-center gap-1"
                               title="Cancelar Reserva"
                             >
                               <X className="w-3.5 h-3.5" />
                               <span>Cancelar</span>
+                            </button>
+                            <button
+                              onClick={() => handleOpenConfirmStatus(reserva.id, 'Anular')}
+                              className="px-2.5 py-1.5 bg-purple-950/45 hover:bg-purple-500 border border-purple-500/20 text-purple-400 hover:text-white text-xs font-semibold rounded-lg transition-all cursor-pointer flex items-center gap-1"
+                              title="Anular Reserva"
+                            >
+                              <X className="w-3.5 h-3.5" />
+                              <span>Anular</span>
                             </button>
                           </>
                         )}
@@ -146,16 +204,24 @@ export const ReservasAdminPage: React.FC = () => {
                               <span>Completar</span>
                             </button>
                             <button
-                              onClick={() => handleStatusTransition(reserva.id, 'Cancelada')}
+                              onClick={() => handleOpenConfirmStatus(reserva.id, 'Cancelar')}
                               className="px-2.5 py-1.5 bg-red-950/45 hover:bg-red-500 border border-red-500/20 text-red-400 hover:text-white text-xs font-semibold rounded-lg transition-all cursor-pointer flex items-center gap-1"
                               title="Cancelar Reserva"
                             >
                               <X className="w-3.5 h-3.5" />
                               <span>Cancelar</span>
                             </button>
+                            <button
+                              onClick={() => handleOpenConfirmStatus(reserva.id, 'Anular')}
+                              className="px-2.5 py-1.5 bg-purple-950/45 hover:bg-purple-500 border border-purple-500/20 text-purple-400 hover:text-white text-xs font-semibold rounded-lg transition-all cursor-pointer flex items-center gap-1"
+                              title="Anular Reserva"
+                            >
+                              <X className="w-3.5 h-3.5" />
+                              <span>Anular</span>
+                            </button>
                           </>
                         )}
-                        {(reserva.estado === 'Cancelada' || reserva.estado === 'Completada') && (
+                        {(reserva.estado === 'Cancelada' || reserva.estado === 'Completada' || reserva.estado === 'Anulada') && (
                           <span className="text-xs text-gray-500 italic">Sin acciones</span>
                         )}
                       </div>
@@ -167,7 +233,67 @@ export const ReservasAdminPage: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Modal de confirmación de Estado */}
+      {confirmingReserva && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fade-in">
+          <div className="glass-panel p-6 rounded-2xl max-w-md w-full shadow-2xl border border-white/10 flex flex-col gap-4">
+            <h3 className="text-lg font-bold font-heading text-white">
+              ¿Estás seguro de que deseas {confirmingReserva.action.toLowerCase()} esta reserva?
+            </h3>
+            <p className="text-gray-400 text-xs">
+              Esta acción es irreversible y liberará la habitación para las fechas indicadas.
+            </p>
+            <div className="flex flex-col gap-1.5 mt-2">
+              <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                Motivo de la {confirmingReserva.action.toLowerCase() === 'cancelar' ? 'cancelación' : 'anulación'}
+              </label>
+              <textarea
+                value={statusMotive}
+                onChange={(e) => setStatusMotive(e.target.value)}
+                placeholder="Indique el motivo (obligatorio)..."
+                rows={3}
+                className="w-full px-4 py-2.5 bg-slate-900/60 border border-gray-800 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-accent-emerald focus:border-transparent transition-all"
+              />
+            </div>
+            <div className="flex justify-end gap-3 pt-3 border-t border-white/5 mt-2">
+              <button
+                type="button"
+                onClick={() => setConfirmingReserva(null)}
+                className="px-4 py-2 text-xs font-semibold rounded-lg bg-white/5 border border-white/10 text-gray-300 hover:bg-white/10 hover:text-white transition-colors cursor-pointer"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={handleToggleStatus}
+                disabled={!statusMotive.trim()}
+                className={`px-4 py-2 text-xs font-semibold rounded-lg text-white transition-all cursor-pointer shadow-md disabled:opacity-50 ${
+                  confirmingReserva.action === 'Anular' 
+                    ? 'bg-purple-600 hover:bg-purple-700 shadow-purple-600/10' 
+                    : 'bg-red-500 hover:bg-red-600 shadow-red-500/10'
+                }`}
+              >
+                Confirmar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Toast Notification */}
+      {isToastOpen && (
+        <div className={`fixed bottom-6 right-6 z-50 p-4 rounded-xl shadow-2xl border flex items-center gap-3 animate-fade-in ${
+          toastType === 'success' 
+            ? 'bg-emerald-950/90 border-emerald-500/30 text-emerald-200' 
+            : 'bg-red-950/90 border-red-500/30 text-red-200'
+        }`}>
+          <ShieldAlert className={`w-5 h-5 ${toastType === 'success' ? 'text-emerald-400' : 'text-red-400'}`} />
+          <span className="text-xs font-semibold">{toastMessage}</span>
+        </div>
+      )}
     </div>
   );
 };
 export default ReservasAdminPage;
+

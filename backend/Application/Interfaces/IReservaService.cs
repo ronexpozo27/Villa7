@@ -10,4 +10,7 @@ public interface IReservaService
     Task<ReservaDto?> GetByIdAsync(Guid id);
     Task CancelByClientAsync(Guid id, Guid usuarioId);
     Task ChangeStatusAsync(Guid id, string nuevoEstado);
+    Task CancelWithMotivoAsync(Guid id, Guid usuarioId, string? motivo, string executorEmail);
+    Task AnularAsync(Guid id, string motivo, string executorEmail);
 }
+
